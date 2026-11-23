@@ -5,10 +5,37 @@ build-backend = "hatchling.build"
 [project]
 name = "occamroute"
 version = "0.1.0"
-description = "Structural AST code graph slicing and adaptive cost-quality LLM routing."
+description = "AST code-graph context compression and calibrated PyTorch/Scikit-learn LLM complexity routing for AI coding agents."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [{ name = "Maykon Lincoln" }]
+keywords = [
+  "llm-routing",
+  "ast-code-graph",
+  "context-engineering",
+  "lost-in-the-middle",
+  "repograph",
+  "routellm",
+  "ai-coding-agents",
+  "swe-bench",
+  "finops",
+  "pytorch",
+  "scikit-learn",
+  "networkx",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Code Generators",
+]
 dependencies = [
   "networkx>=3.2",
   "numpy>=1.26",
@@ -29,6 +56,11 @@ dev = [
   "pytest>=8.0",
   "scipy>=1.12",
 ]
+
+[project.urls]
+Homepage = "https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-"
+Repository = "https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-"
+Issues = "https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/occamroute"]

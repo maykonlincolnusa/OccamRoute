@@ -3,20 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OccamRoute — AST Context Slicing &amp; LLM Complexity Routing Observability</title>
-  <meta name="description" content="OccamRoute reduces AI coding agent token usage by 94.5% with 1.00 file/function recall using AST RepoGraph k-hop slicing, Position-Aware Ordering, and calibrated PyTorch/Sklearn LLM routing verified on NVIDIA Tesla T4." />
-  <meta name="keywords" content="OccamRoute, LLM Routing, RouteLLM, RepoGraph, Lost in the Middle, AST Code Graph, AI Coding Agents, Context Engineering, FinOps AI, SWE-bench, PyTorch, Scikit-learn, NetworkX" />
+  <title>OccamRoute — Surgical AST Context Slicing &amp; LLM Complexity Routing Control Plane</title>
+  <meta name="description" content="OccamRoute cuts AI coding agent token spend by 94.5% with 1.00 file/function recall using AST RepoGraph k-hop slicing, Position-Aware Ordering, and calibrated PyTorch/Scikit-learn LLM routing verified on NVIDIA Tesla T4." />
+  <meta name="keywords" content="OccamRoute, LLM Routing, RouteLLM, RepoGraph, Lost in the Middle, AST Code Graph, AI Coding Agents, Context Engineering, FinOps AI, SWE-bench, PyTorch, Scikit-learn, NetworkX, 4-bit Quantization" />
+  <meta name="author" content="Maykon Lincoln" />
+  <link rel="canonical" href="https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-" />
   <meta property="og:title" content="OccamRoute — Surgical AST Context &amp; Cost-Quality LLM Routing Engine" />
-  <meta property="og:description" content="Verified on Colab Tesla T4 (5.88 GB Peak VRAM): -94.5% tokens, 0.828 Symbol F1, PyTorch ROC-AUC 0.983, $1.79 per 1k agent runs." />
+  <meta property="og:description" content="Verified on NVIDIA Tesla T4 (5.88 GB Peak VRAM): -94.5% tokens, 0.828 Symbol F1, PyTorch ROC-AUC 0.983, $1.79 per 1k agent runs." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-" />
+  <meta property="og:image" content="/assets/swebench_pareto_frontier.png" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="OccamRoute — Surgical AST Context &amp; LLM Complexity Routing" />
+  <meta name="twitter:description" content="-94.5% tokens, 1.00 File/Function Recall, PyTorch ROC-AUC 0.983 on Colab Tesla T4 GPU." />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "OccamRoute",
+    "url": "https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Linux, macOS",
+    "license": "https://opensource.org/licenses/MIT",
     "description": "AST-based surgical code context slicer and calibrated PyTorch/Scikit-learn LLM complexity router for hyperscale engineering teams."
   }
   </script>
@@ -37,6 +45,7 @@
       --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       background: radial-gradient(circle at 12% -10%, #172554 0%, transparent 42%),
@@ -49,8 +58,16 @@
     .container { max-width: 1460px; margin: 0 auto; padding: 20px 24px 56px; }
     header {
       display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
-      gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+      gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
     }
+    nav.anchor-nav {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+    }
+    nav.anchor-nav a {
+      font-size: 12px; color: var(--muted); text-decoration: none;
+      padding: 5px 11px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border);
+    }
+    nav.anchor-nav a:hover { color: var(--cyan); border-color: var(--cyan); }
     .brand { display: flex; align-items: center; gap: 14px; }
     .logo {
       width: 44px; height: 44px; border-radius: 11px;
@@ -160,6 +177,8 @@
     .gallery-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
     .gallery-card img { width: 100%; border-radius: 6px; display: block; }
     .gallery-card .cap { font-size: 12px; color: var(--muted); margin-top: 6px; font-family: var(--mono); }
+    footer { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    footer a { color: var(--cyan); text-decoration: none; }
   </style>
 </head>
 <body>
@@ -180,174 +199,190 @@
     </div>
   </header>
 
-  <div class="t4-banner" id="t4-banner">
-    <div><strong>Colab Tesla T4 Training &amp; Benchmark Verified:</strong> Carregando metadados da execução CUDA...</div>
-    <span class="pill">SWE-bench Lite + encode/httpx@0.28.1</span>
-  </div>
+  <nav class="anchor-nav" aria-label="Dashboard sections">
+    <a href="#sec-kpis">KPIs T4</a>
+    <a href="#sec-hyperscale">Casos em Hiperescala (Google / Meta / TikTok)</a>
+    <a href="#sec-pareto">Fronteira de Pareto &amp; RouteLLM</a>
+    <a href="#sec-tasks">Resultados por Tarefa (T01–T12)</a>
+    <a href="#sec-playground">Live Playground AST</a>
+    <a href="#gallery-section">Gráficos Tesla T4</a>
+  </nav>
 
-  <!-- 8 Executive KPI Cards -->
-  <section class="kpi-grid" id="kpi-cards"></section>
-
-  <!-- Hyperscale Use Cases & Interactive Fleet ROI Calculator -->
-  <section class="panel" style="margin-bottom:18px;">
-    <div class="panel-head">
-      <h2 class="panel-title">Casos de Uso em Hiperescala (Google, Meta, TikTok/ByteDance, Cloud FinOps)</h2>
-      <span class="panel-note">Aplicações arquiteturais ilustrativas para equipes de AI Developer Platforms &amp; Infraestrutura</span>
-    </div>
-    <div class="grid-4">
-      <div class="usecase-card">
-        <div class="org">Google — Monorepo &amp; IDE Agents</div>
-        <div class="prob">Problema: arquivos gigantes e RAG em chunks quebram cadeias de chamadas e geram degradação <em>Lost in the Middle</em>.</div>
-        <div class="sol">OccamRoute: Subgrafo AST k-hop sob teto rígido de tokens preserva 1.00 Recall com -94.5% menos tokens.</div>
-      </div>
-      <div class="usecase-card">
-        <div class="org">Meta — PR Triage &amp; Frota GPU 4-bit</div>
-        <div class="prob">Problema: roteamento cego envia lookups triviais para clusters caros em vez de modelos quantizados locais.</div>
-        <div class="sol">OccamRoute: Roteador PyTorch MLP (AUC 0.983) separa complexidade topológica usando 5.88 GB VRAM em 4-bit.</div>
-      </div>
-      <div class="usecase-card">
-        <div class="org">TikTok / ByteDance — Microsserviços &amp; FinOps</div>
-        <div class="prob">Problema: latência de contexto e explosão de custo em milhões de chamadas de agentes em CI/CD.</div>
-        <div class="sol">OccamRoute: Slice + Route determinístico em &lt; 2 ms reduz custo projetado de $17.17 para $1.79 / 1k execuções.</div>
-      </div>
-      <div class="usecase-card">
-        <div class="org">Amazon / Microsoft / Stripe — Incident SRE</div>
-        <div class="prob">Problema: agentes autônomos perdem o foco quando dependências críticas caem no miolo do prompt.</div>
-        <div class="sol">OccamRoute: Ordenação em U reduz exposição Middle-Burial de 29.6% (Brute Force) para 12.8%.</div>
-      </div>
+  <main>
+    <div class="t4-banner" id="t4-banner">
+      <div><strong>Treinamento &amp; Benchmark Verificados em NVIDIA Tesla T4:</strong> Carregando metadados da execução CUDA...</div>
+      <span class="pill">SWE-bench Lite + encode/httpx@0.28.1</span>
     </div>
 
-    <div style="border-top:1px solid var(--border);padding-top:12px;">
-      <div class="controls" style="margin-bottom:8px;">
-        <label style="flex:1;min-width:240px;">
-          Simulador de Escala Enterprise (Execuções de Agentes / Mês): <strong id="fleet-vol-label" style="color:#6ee7b7;font-family:var(--mono)">1,000,000 runs/mês</strong>
-          <input id="fleet-slider" type="range" min="10000" max="5000000" step="10000" value="1000000" />
-        </label>
-      </div>
-      <div class="sim-stats" id="fleet-roi-stats"></div>
-    </div>
-  </section>
+    <!-- 8 Executive KPI Cards -->
+    <section class="kpi-grid" id="sec-kpis" aria-label="Executive KPIs"></section>
 
-  <!-- Pareto Frontier + RouteLLM Threshold Simulator -->
-  <section class="grid-2">
-    <div class="panel">
+    <!-- Hyperscale Use Cases & Interactive Fleet ROI Calculator -->
+    <section class="panel" id="sec-hyperscale" style="margin-bottom:18px;">
       <div class="panel-head">
-        <h2 class="panel-title">Fronteira de Pareto (Resultados Reais Colab Tesla T4)</h2>
-        <span class="panel-note">Brute Force vs FAISS RAG vs Unbounded AST 2-Hop vs OccamRoute (ML)</span>
+        <h2 class="panel-title">Casos de Uso em Hiperescala (Google, Meta, TikTok/ByteDance, Amazon, Microsoft &amp; Stripe)</h2>
+        <span class="panel-note">Aplicações arquiteturais ilustrativas para equipes de AI Developer Platforms &amp; Infraestrutura</span>
       </div>
-      <canvas id="pareto-canvas" width="760" height="330"></canvas>
-    </div>
+      <div class="grid-4">
+        <div class="usecase-card">
+          <div class="org">Google — Monorepo &amp; IDE Agents</div>
+          <div class="prob">Problema: arquivos extensos e RAG em chunks quebram cadeias de chamadas e geram degradação <em>Lost in the Middle</em>.</div>
+          <div class="sol">OccamRoute: Subgrafo AST k-hop sob teto rígido de tokens preserva 1.00 Recall com -94.5% menos tokens.</div>
+        </div>
+        <div class="usecase-card">
+          <div class="org">Meta — PR Triage &amp; Frota GPU 4-bit</div>
+          <div class="prob">Problema: roteamento cego envia lookups simples para clusters caros em vez de modelos quantizados locais.</div>
+          <div class="sol">OccamRoute: Roteador PyTorch MLP (AUC 0.983) separa complexidade topológica usando 5.88 GB VRAM em 4-bit.</div>
+        </div>
+        <div class="usecase-card">
+          <div class="org">TikTok / ByteDance — Microsserviços &amp; FinOps</div>
+          <div class="prob">Problema: latência de contexto e explosão de custo em milhões de chamadas de agentes em CI/CD.</div>
+          <div class="sol">OccamRoute: Slice + Route determinístico em &lt; 2 ms reduz custo projetado de $17.17 para $1.79 / 1k execuções.</div>
+        </div>
+        <div class="usecase-card">
+          <div class="org">Amazon / Microsoft / Stripe — Incident SRE</div>
+          <div class="prob">Problema: agentes autônomos perdem o foco quando dependências críticas caem no miolo do prompt.</div>
+          <div class="sol">OccamRoute: Ordenação em U reduz exposição Middle-Burial de 29.6% (Brute Force) para 12.8%.</div>
+        </div>
+      </div>
 
-    <div class="panel">
-      <div class="panel-head">
-        <h2 class="panel-title">Simulador RouteLLM (Threshold &tau; &rarr; PGR &amp; Custo)</h2>
-        <select id="sim-backend">
-          <option value="torch">PyTorch Tabular MLP (CUDA T4)</option>
-          <option value="sklearn">Sklearn Calibrated GBDT</option>
-        </select>
+      <div style="border-top:1px solid var(--border);padding-top:12px;">
+        <div class="controls" style="margin-bottom:8px;">
+          <label style="flex:1;min-width:240px;">
+            Simulador de Escala Enterprise (Execuções de Agentes / Mês): <strong id="fleet-vol-label" style="color:#6ee7b7;font-family:var(--mono)">1,000,000 runs/mês</strong>
+            <input id="fleet-slider" type="range" min="10000" max="5000000" step="10000" value="1000000" />
+          </label>
+        </div>
+        <div class="sim-stats" id="fleet-roi-stats"></div>
       </div>
-      <div class="controls">
-        <label style="flex:1">
-          Threshold &tau;: <strong id="tau-label" style="color:#6ee7b7;font-family:var(--mono)">0.30</strong>
-          <input id="tau-slider" type="range" min="0.10" max="0.90" step="0.10" value="0.30" />
-        </label>
-      </div>
-      <canvas id="sweep-canvas" width="640" height="215"></canvas>
-      <div class="sim-stats" id="sim-stats"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- 4-Pipeline Table + Colab T4 Router Comparison -->
-  <section class="grid-2">
-    <div class="panel">
+    <!-- Pareto Frontier + RouteLLM Threshold Simulator -->
+    <section class="grid-2" id="sec-pareto">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Fronteira de Pareto (Resultados Reais Colab Tesla T4)</h2>
+          <span class="panel-note">Brute Force vs FAISS RAG vs Unbounded AST 2-Hop vs OccamRoute (ML)</span>
+        </div>
+        <canvas id="pareto-canvas" width="760" height="330"></canvas>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Simulador RouteLLM (Threshold &tau; &rarr; PGR &amp; Custo)</h2>
+          <select id="sim-backend">
+            <option value="torch">PyTorch Tabular MLP (CUDA T4)</option>
+            <option value="sklearn">Sklearn Calibrated GBDT</option>
+          </select>
+        </div>
+        <div class="controls">
+          <label style="flex:1">
+            Threshold &tau;: <strong id="tau-label" style="color:#6ee7b7;font-family:var(--mono)">0.30</strong>
+            <input id="tau-slider" type="range" min="0.10" max="0.90" step="0.10" value="0.30" />
+          </label>
+        </div>
+        <canvas id="sweep-canvas" width="640" height="215"></canvas>
+        <div class="sim-stats" id="sim-stats"></div>
+      </div>
+    </section>
+
+    <!-- 4-Pipeline Table + Colab T4 Router Comparison -->
+    <section class="grid-2">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Benchmark dos 4 Pipelines (Tesla T4: FAISS + Qwen 4-bit)</h2>
+          <span class="panel-note">Comparativo auditável por métrica</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="pipeline-table"></table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Separabilidade Topológica (Cohen's d — Dataset T4)</h2>
+          <span class="panel-note">Features que mais separam tarefas Low vs High</span>
+        </div>
+        <canvas id="cohen-canvas" width="640" height="260"></canvas>
+      </div>
+    </section>
+
+    <!-- Per-Task T4 Evaluation Table -->
+    <section class="panel" id="sec-tasks" style="margin-bottom:18px;">
       <div class="panel-head">
-        <h2 class="panel-title">Benchmark dos 4 Pipelines (Tesla T4: FAISS + Qwen 4-bit)</h2>
-        <span class="panel-note">Comparativo auditável por métrica</span>
+        <h2 class="panel-title">Detalhamento por Tarefa — Execução Tesla T4 (`OccamRoute (ML)` vs Baselines)</h2>
+        <span class="panel-note">Inclui latência real em `Qwen2.5-Coder-7B-Instruct` 4-bit (`live_t4_4bit`)</span>
       </div>
       <div style="overflow-x:auto;">
-        <table id="pipeline-table"></table>
+        <table id="per-task-table"></table>
       </div>
-    </div>
+    </section>
 
-    <div class="panel">
+    <!-- Live Playground: Slicer + AST Subgraph + Router + 17-D Features -->
+    <section class="panel" id="sec-playground" style="margin-bottom:18px;">
       <div class="panel-head">
-        <h2 class="panel-title">Separabilidade Topológica (Cohen's d — Dataset T4)</h2>
-        <span class="panel-note">Features que mais separam tarefas Low vs High</span>
-      </div>
-      <canvas id="cohen-canvas" width="640" height="260"></canvas>
-    </div>
-  </section>
-
-  <!-- Per-Task T4 Evaluation Table -->
-  <section class="panel" style="margin-bottom:18px;">
-    <div class="panel-head">
-      <h2 class="panel-title">Detalhamento por Tarefa — Execução Tesla T4 (`OccamRoute (ML)` vs Baselines)</h2>
-      <span class="panel-note">Inclui latência real em `Qwen2.5-Coder-7B-Instruct` 4-bit (`live_t4_4bit`)</span>
-    </div>
-    <div style="overflow-x:auto;">
-      <table id="per-task-table"></table>
-    </div>
-  </section>
-
-  <!-- Live Playground: Slicer + AST Subgraph + Router + 17-D Features -->
-  <section class="panel" style="margin-bottom:18px;">
-    <div class="panel-head">
-      <h2 class="panel-title">Live Surgical Slicer &amp; ML Router Playground</h2>
-      <div class="controls" style="margin:0;">
-        <button class="ghost preset-btn" data-q="Explain `codes.is_redirect` and `codes.get_reason_phrase`.">Preset: Lookup Simples</button>
-        <button class="ghost preset-btn" data-q="Trace `BaseClient._redirect_headers`, `_same_origin`, and `_is_https_redirect` for cross-origin leaks.">Preset: Cross-Origin Trace</button>
-        <button class="ghost preset-btn" data-q="Trace `Client.send` through `_send_handling_auth`, `_send_handling_redirects` and `HTTPTransport.handle_request`.">Preset: Fluxo Multi-Hop</button>
-      </div>
-    </div>
-
-    <div class="controls">
-      <input id="live-query" type="text" style="flex:1;min-width:260px" value="Trace `BaseClient._redirect_headers`, `_same_origin`, and `_is_https_redirect` for cross-origin leaks." />
-      <label>Budget (tok)<input id="live-budget" type="number" value="1500" min="200" max="6000" step="100" style="width:95px" /></label>
-      <label>Max Nós<input id="live-max-syms" type="number" value="6" min="1" max="12" style="width:76px" /></label>
-      <label>k-Hop<input id="live-khop" type="number" value="2" min="0" max="3" style="width:68px" /></label>
-      <button id="run-route-btn">Executar Slice + Route</button>
-    </div>
-
-    <div class="verdict-row" id="live-verdicts"></div>
-
-    <div class="grid-eq" style="margin-bottom:0;">
-      <div>
-        <div class="panel-head" style="margin-bottom:6px;">
-          <span class="panel-title" style="font-size:13.5px;">Subgrafo AST (`networkx`) &amp; Position-Aware Ordering (U-Shape)</span>
-          <span class="panel-note" id="live-slice-meta"></span>
+        <h2 class="panel-title">Live Surgical Slicer &amp; ML Router Playground</h2>
+        <div class="controls" style="margin:0;">
+          <button class="ghost preset-btn" data-q="Explain `codes.is_redirect` and `codes.get_reason_phrase`.">Preset: Lookup Simples</button>
+          <button class="ghost preset-btn" data-q="Trace `BaseClient._redirect_headers`, `_same_origin`, and `_is_https_redirect` for cross-origin leaks.">Preset: Cross-Origin Trace</button>
+          <button class="ghost preset-btn" data-q="Trace `Client.send` through `_send_handling_auth`, `_send_handling_redirects` and `HTTPTransport.handle_request`.">Preset: Fluxo Multi-Hop</button>
         </div>
-        <svg id="subgraph-svg" class="chart" viewBox="0 0 620 220"></svg>
-        <div class="u-strip" id="u-order-strip"></div>
       </div>
-      <div>
-        <div class="panel-head" style="margin-bottom:6px;">
-          <span class="panel-title" style="font-size:13.5px;">Vetor Topológico (17 Features) &amp; Contexto Cirúrgico</span>
+
+      <div class="controls">
+        <input id="live-query" type="text" style="flex:1;min-width:260px" value="Trace `BaseClient._redirect_headers`, `_same_origin`, and `_is_https_redirect` for cross-origin leaks." />
+        <label>Budget (tok)<input id="live-budget" type="number" value="1500" min="200" max="6000" step="100" style="width:95px" /></label>
+        <label>Max Nós<input id="live-max-syms" type="number" value="6" min="1" max="12" style="width:76px" /></label>
+        <label>k-Hop<input id="live-khop" type="number" value="2" min="0" max="3" style="width:68px" /></label>
+        <button id="run-route-btn">Executar Slice + Route</button>
+      </div>
+
+      <div class="verdict-row" id="live-verdicts"></div>
+
+      <div class="grid-eq" style="margin-bottom:0;">
+        <div>
+          <div class="panel-head" style="margin-bottom:6px;">
+            <span class="panel-title" style="font-size:13.5px;">Subgrafo AST (`networkx`) &amp; Position-Aware Ordering (U-Shape)</span>
+            <span class="panel-note" id="live-slice-meta"></span>
+          </div>
+          <svg id="subgraph-svg" class="chart" viewBox="0 0 620 220"></svg>
+          <div class="u-strip" id="u-order-strip"></div>
         </div>
-        <div class="feat-grid" id="live-features" style="margin-bottom:10px;"></div>
-        <pre class="codebox" id="live-context">Aguardando execução...</pre>
+        <div>
+          <div class="panel-head" style="margin-bottom:6px;">
+            <span class="panel-title" style="font-size:13.5px;">Vetor Topológico (17 Features) &amp; Contexto Cirúrgico</span>
+          </div>
+          <div class="feat-grid" id="live-features" style="margin-bottom:10px;"></div>
+          <pre class="codebox" id="live-context">Aguardando execução...</pre>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Colab T4 Evidence Gallery -->
-  <section class="panel" id="gallery-section" style="margin-bottom:18px;">
-    <div class="panel-head">
-      <h2 class="panel-title">Evidências Visuais Geradas na GPU Tesla T4 (`assets/*.png`)</h2>
-      <span class="panel-note">Renderizadas diretamente ao final do treinamento remoto</span>
-    </div>
-    <div class="gallery-grid" id="t4-gallery"></div>
-  </section>
+    <!-- Colab T4 Evidence Gallery -->
+    <section class="panel" id="gallery-section" style="margin-bottom:18px;">
+      <div class="panel-head">
+        <h2 class="panel-title">Evidências Visuais Geradas na GPU Tesla T4 (`assets/*.png`)</h2>
+        <span class="panel-note">Renderizadas diretamente ao final do treinamento remoto</span>
+      </div>
+      <div class="gallery-grid" id="t4-gallery"></div>
+    </section>
 
-  <!-- Live Telemetry -->
-  <section class="panel">
-    <div class="panel-head">
-      <h2 class="panel-title">Telemetria Ao Vivo do Playground</h2>
-      <span class="panel-note">Chamadas recentes ao endpoint `/api/route`</span>
-    </div>
-    <div style="overflow-x:auto;">
-      <table id="telemetry-table"></table>
-    </div>
-  </section>
+    <!-- Live Telemetry -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Telemetria Ao Vivo do Playground</h2>
+        <span class="panel-note">Chamadas recentes ao endpoint `/api/route`</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="telemetry-table"></table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>OccamRoute • Open-Source AST Context Slicing &amp; Adaptive LLM Routing</span>
+    <span><a href="https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </footer>
 </div>
 
 <script>
@@ -620,7 +655,7 @@ function renderGallery(data) {
   };
   document.getElementById("t4-gallery").innerHTML = imgs.map(name => `
     <div class="gallery-card">
-      <img src="/assets/${name}" alt="${name}" loading="lazy" />
+      <img src="/assets/${name}" alt="${labels[name] || name}" loading="lazy" />
       <div class="cap">${labels[name] || name}</div>
     </div>
   `).join("");
