@@ -35,7 +35,7 @@ class LiveRouteRequest(BaseModel):
     max_symbols: int = Field(default=6, ge=1, le=16)
     k_hop: int = Field(default=2, ge=0, le=3)
     threshold: float = Field(default=0.50, ge=0.05, le=0.95)
-    backend: Literal["torch", "sklearn"] = "torch"
+    backend: Literal["torch", "sklearn"] = "sklearn"
 
 
 class OrderedSymbolView(BaseModel):
@@ -164,19 +164,10 @@ class DashboardState:
         self._ensure_router_artifacts()
         self.torch_router = OccamRouter.from_artifact(self.artifacts_dir / "torch_router.pt", threshold=0.50)
         try:
-            self.sklearn_router = OccamRouter.from_artifact(self.artifacts_dir / "sklearn_router.joblib", threshold=0.50)
-        except Exception:
-            # Handle cross-version scikit-learn pickle incompatibility (e.g. Colab 1.6 -> local 1.9)
-            train_csv = self.artifacts_dir / "router_training_dataset.csv"
-            if train_csv.exists():
-                df_t = pd.read_csv(train_csv)
-                X_t = df_t[list(FEATURE_NAMES)].to_numpy(dtype=np.float32)
-                y_t = df_t["label"].to_numpy(dtype=np.int64)
-            else:
-                ds_tmp = build_routing_dataset(repo_graph=self.repo_graph, n_samples=320, val_ratio=0.25, seed=42)
-                X_t, y_t = ds_tmp.X_train, ds_tmp.y_train
-            sk_refit = SklearnComplexityRouter().fit(X_t, y_t)
-            sk_refit.save(self.artifacts_dir / "sklearn_router.joblib")
+            self.sklearn_router = OccamRouter.from_sklearn_artifacts(self.artifacts_dir, threshold=0.50)
+        except FileNotFoundError:
+            ds_tmp = build_routing_dataset(repo_graph=self.repo_graph, n_samples=320, val_ratio=0.25, seed=42)
+            sk_refit = SklearnComplexityRouter().fit(ds_tmp.X_train, ds_tmp.y_train)
             self.sklearn_router = OccamRouter(sk_refit, threshold=0.50)
         self.live_telemetry: deque[dict[str, Any]] = deque(maxlen=40)
         self._seed_initial_telemetry()

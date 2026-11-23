@@ -1,208 +1,249 @@
 {
-  "trained_on": "Tesla T4",
-  "peak_vram_gb": 5.879,
+  "training_version": "v2_l4_empirical_multirepo",
+  "trained_on": "NVIDIA L4",
+  "peak_vram_gb": 5.777,
   "faiss_enabled": true,
   "live_4bit_model": "Qwen/Qwen2.5-Coder-7B-Instruct",
-  "swebench_tasks_loaded": 60,
+  "swebench_tasks_loaded": 178,
+  "train_repos": [
+    "pytest-dev/pytest",
+    "sphinx-doc/sphinx",
+    "scikit-learn/scikit-learn",
+    "pylint-dev/pylint",
+    "pydata/xarray",
+    "mwaskom/seaborn"
+  ],
+  "loro_repos": [
+    "psf/requests",
+    "pallets/flask"
+  ],
+  "train_pool_rows": 145,
+  "train_fit_rows": 280,
+  "val_rows": 37,
+  "loro_rows": 33,
+  "empirical_pos_rate": 0.5899,
   "optimal_tau": 0.3,
-  "q_weak": 0.9106,
+  "httpx_local_offload_pct": 100.0,
+  "q_weak": 0.8585,
   "q_strong": 0.9766,
   "sklearn": {
-    "accuracy": 0.9748743718592965,
-    "roc_auc": 0.981713477470196,
-    "f1": 0.9751243781094527,
-    "brier_score": 0.03419075907497343,
-    "ece": 0.05336430309405879
+    "accuracy": 0.9459459459459459,
+    "roc_auc": 0.990909090909091,
+    "f1": 0.9565217391304348,
+    "brier_score": 0.04561678308346918,
+    "ece": 0.11855376693042549
   },
   "torch": {
-    "accuracy": 0.964824120603015,
-    "roc_auc": 0.9829258436047686,
-    "f1": 0.9655172413793104,
-    "brier_score": 0.031217225754875382,
-    "ece": 0.03603049262833956
+    "accuracy": 0.8378378378378378,
+    "roc_auc": 0.906060606060606,
+    "f1": 0.8571428571428571,
+    "brier_score": 0.13337864932690852,
+    "ece": 0.16392818153709982
+  },
+  "sklearn_loro": {
+    "accuracy": 0.8181818181818182,
+    "roc_auc": 0.9407407407407408,
+    "f1": 0.8333333333333334,
+    "brier_score": 0.1340511261930529,
+    "ece": 0.15524482320655478
+  },
+  "torch_loro": {
+    "accuracy": 0.5757575757575758,
+    "roc_auc": 0.548148148148148,
+    "f1": 0.631578947368421,
+    "brier_score": 0.3907189684296907,
+    "ece": 0.4023255569239457
   },
   "sklearn_sweep": [
     {
       "threshold": 0.1,
-      "strong_call_pct": 58.79396984924623,
-      "accuracy": 0.9045226130653267,
-      "f1": 0.9116279069767442,
-      "avg_quality": 0.9498310685157776,
-      "pgr_pct": 94.36860328830076,
-      "avg_cost_per_1k_usd": 1.5140703517587941,
-      "cost_savings_pct": 36.91373534338358
+      "strong_call_pct": 78.37837837837837,
+      "accuracy": 0.8108108108108109,
+      "f1": 0.8627450980392157,
+      "avg_quality": 0.8842054009437561,
+      "pgr_pct": 96.67573256623027,
+      "avg_cost_per_1k_usd": 1.9351351351351354,
+      "cost_savings_pct": 19.36936936936936
     },
     {
       "threshold": 0.2,
-      "strong_call_pct": 56.78391959798995,
-      "accuracy": 0.9246231155778895,
-      "f1": 0.9289099526066351,
-      "avg_quality": 0.9491357803344727,
-      "pgr_pct": 94.06150320816252,
-      "avg_cost_per_1k_usd": 1.470854271356784,
-      "cost_savings_pct": 38.714405360133995
+      "strong_call_pct": 70.27027027027027,
+      "accuracy": 0.8918918918918919,
+      "f1": 0.9166666666666666,
+      "avg_quality": 0.8817729353904724,
+      "pgr_pct": 95.84325819169268,
+      "avg_cost_per_1k_usd": 1.7608108108108105,
+      "cost_savings_pct": 26.632882882882893
     },
     {
       "threshold": 0.3,
-      "strong_call_pct": 53.266331658291456,
-      "accuracy": 0.9597989949748744,
-      "f1": 0.9607843137254902,
-      "avg_quality": 0.9476388692855835,
-      "pgr_pct": 93.40033634896047,
-      "avg_cost_per_1k_usd": 1.3952261306532663,
-      "cost_savings_pct": 41.86557788944724
+      "strong_call_pct": 67.56756756756756,
+      "accuracy": 0.918918918918919,
+      "f1": 0.9361702127659575,
+      "avg_quality": 0.8694080710411072,
+      "pgr_pct": 91.6115712510146,
+      "avg_cost_per_1k_usd": 1.7027027027027024,
+      "cost_savings_pct": 29.054054054054067
     },
     {
       "threshold": 0.4,
-      "strong_call_pct": 52.26130653266332,
-      "accuracy": 0.9698492462311558,
-      "f1": 0.9702970297029703,
-      "avg_quality": 0.9472781419754028,
-      "pgr_pct": 93.241007614713,
-      "avg_cost_per_1k_usd": 1.3736180904522615,
-      "cost_savings_pct": 42.76591289782243
+      "strong_call_pct": 64.86486486486487,
+      "accuracy": 0.9459459459459459,
+      "f1": 0.9565217391304348,
+      "avg_quality": 0.8685972690582275,
+      "pgr_pct": 91.33408659243005,
+      "avg_cost_per_1k_usd": 1.6445945945945943,
+      "cost_savings_pct": 31.475225225225234
     },
     {
       "threshold": 0.5,
-      "strong_call_pct": 51.75879396984925,
-      "accuracy": 0.9748743718592965,
-      "f1": 0.9751243781094527,
-      "avg_quality": 0.9472323656082153,
-      "pgr_pct": 93.22078876674506,
-      "avg_cost_per_1k_usd": 1.3628140703517588,
-      "cost_savings_pct": 43.21608040201005
+      "strong_call_pct": 64.86486486486487,
+      "accuracy": 0.9459459459459459,
+      "f1": 0.9565217391304348,
+      "avg_quality": 0.8685972690582275,
+      "pgr_pct": 91.33408659243005,
+      "avg_cost_per_1k_usd": 1.6445945945945943,
+      "cost_savings_pct": 31.475225225225234
     },
     {
       "threshold": 0.6,
-      "strong_call_pct": 50.753768844221106,
-      "accuracy": 0.964824120603015,
-      "f1": 0.964824120603015,
-      "avg_quality": 0.9425966143608093,
-      "pgr_pct": 91.17323551061543,
-      "avg_cost_per_1k_usd": 1.341206030150754,
-      "cost_savings_pct": 44.116415410385244
+      "strong_call_pct": 62.16216216216216,
+      "accuracy": 0.972972972972973,
+      "f1": 0.9777777777777777,
+      "avg_quality": 0.8580892086029053,
+      "pgr_pct": 87.73786257053644,
+      "avg_cost_per_1k_usd": 1.5864864864864863,
+      "cost_savings_pct": 33.8963963963964
     },
     {
       "threshold": 0.7,
-      "strong_call_pct": 48.24120603015075,
-      "accuracy": 0.9396984924623115,
-      "f1": 0.9381443298969072,
-      "avg_quality": 0.9317184686660767,
-      "pgr_pct": 86.36849482260594,
-      "avg_cost_per_1k_usd": 1.2871859296482413,
-      "cost_savings_pct": 46.36725293132328
+      "strong_call_pct": 56.75675675675676,
+      "accuracy": 0.918918918918919,
+      "f1": 0.9302325581395349,
+      "avg_quality": 0.829389214515686,
+      "pgr_pct": 77.9157256877603,
+      "avg_cost_per_1k_usd": 1.4702702702702701,
+      "cost_savings_pct": 38.738738738738746
     },
     {
       "threshold": 0.8,
-      "strong_call_pct": 44.221105527638194,
-      "accuracy": 0.9195979899497487,
-      "f1": 0.9139784946236559,
-      "avg_quality": 0.9182795882225037,
-      "pgr_pct": 80.43270967313916,
-      "avg_cost_per_1k_usd": 1.2007537688442211,
-      "cost_savings_pct": 49.96859296482412
+      "strong_call_pct": 45.94594594594595,
+      "accuracy": 0.8648648648648649,
+      "f1": 0.8717948717948718,
+      "avg_quality": 0.7995243668556213,
+      "pgr_pct": 67.69493536951275,
+      "avg_cost_per_1k_usd": 1.2378378378378376,
+      "cost_savings_pct": 48.42342342342343
     },
     {
       "threshold": 0.9,
-      "strong_call_pct": 39.698492462311556,
-      "accuracy": 0.8743718592964824,
-      "f1": 0.8587570621468926,
-      "avg_quality": 0.8982592821121216,
-      "pgr_pct": 71.58999124902986,
-      "avg_cost_per_1k_usd": 1.1035175879396986,
-      "cost_savings_pct": 54.020100502512555
+      "strong_call_pct": 21.62162162162162,
+      "accuracy": 0.6216216216216216,
+      "f1": 0.5333333333333333,
+      "avg_quality": 0.7052866220474243,
+      "pgr_pct": 35.443499142129134,
+      "avg_cost_per_1k_usd": 0.7148648648648649,
+      "cost_savings_pct": 70.21396396396395
     }
   ],
   "torch_sweep": [
     {
       "threshold": 0.1,
-      "strong_call_pct": 55.778894472361806,
-      "accuracy": 0.9346733668341709,
-      "f1": 0.937799043062201,
-      "avg_quality": 0.9484553337097168,
-      "pgr_pct": 93.76095845763888,
-      "avg_cost_per_1k_usd": 1.4492462311557788,
-      "cost_savings_pct": 39.61474036850922
+      "strong_call_pct": 75.67567567567568,
+      "accuracy": 0.8378378378378378,
+      "f1": 0.88,
+      "avg_quality": 0.8833945989608765,
+      "pgr_pct": 96.39824790764573,
+      "avg_cost_per_1k_usd": 1.877027027027027,
+      "cost_savings_pct": 21.790540540540537
     },
     {
       "threshold": 0.2,
-      "strong_call_pct": 54.2713567839196,
-      "accuracy": 0.949748743718593,
-      "f1": 0.9514563106796117,
-      "avg_quality": 0.9480546116828918,
-      "pgr_pct": 93.58396455804441,
-      "avg_cost_per_1k_usd": 1.4168341708542715,
-      "cost_savings_pct": 40.965242881072015
+      "strong_call_pct": 70.27027027027027,
+      "accuracy": 0.8378378378378378,
+      "f1": 0.875,
+      "avg_quality": 0.8796108365058899,
+      "pgr_pct": 95.10331270132325,
+      "avg_cost_per_1k_usd": 1.7608108108108105,
+      "cost_savings_pct": 26.632882882882893
     },
     {
       "threshold": 0.3,
-      "strong_call_pct": 52.76381909547738,
-      "accuracy": 0.964824120603015,
-      "f1": 0.9655172413793104,
-      "avg_quality": 0.9475752711296082,
-      "pgr_pct": 93.37224584012999,
-      "avg_cost_per_1k_usd": 1.3844221105527639,
-      "cost_savings_pct": 42.31574539363484
+      "strong_call_pct": 64.86486486486487,
+      "accuracy": 0.7837837837837838,
+      "f1": 0.8260869565217391,
+      "avg_quality": 0.8574648499488831,
+      "pgr_pct": 87.5241853082654,
+      "avg_cost_per_1k_usd": 1.6445945945945943,
+      "cost_savings_pct": 31.475225225225234
     },
     {
       "threshold": 0.4,
-      "strong_call_pct": 52.76381909547738,
-      "accuracy": 0.964824120603015,
-      "f1": 0.9655172413793104,
-      "avg_quality": 0.9475752711296082,
-      "pgr_pct": 93.37224584012999,
-      "avg_cost_per_1k_usd": 1.3844221105527639,
-      "cost_savings_pct": 42.31574539363484
+      "strong_call_pct": 59.45945945945946,
+      "accuracy": 0.7837837837837838,
+      "f1": 0.8181818181818182,
+      "avg_quality": 0.8409784436225891,
+      "pgr_pct": 81.88196325240659,
+      "avg_cost_per_1k_usd": 1.5283783783783782,
+      "cost_savings_pct": 36.31756756756758
     },
     {
       "threshold": 0.5,
-      "strong_call_pct": 52.76381909547738,
-      "accuracy": 0.964824120603015,
-      "f1": 0.9655172413793104,
-      "avg_quality": 0.9475752711296082,
-      "pgr_pct": 93.37224584012999,
-      "avg_cost_per_1k_usd": 1.3844221105527639,
-      "cost_savings_pct": 42.31574539363484
+      "strong_call_pct": 54.054054054054056,
+      "accuracy": 0.8378378378378378,
+      "f1": 0.8571428571428571,
+      "avg_quality": 0.8296595215797424,
+      "pgr_pct": 78.00823417314447,
+      "avg_cost_per_1k_usd": 1.412162162162162,
+      "cost_savings_pct": 41.159909909909906
     },
     {
       "threshold": 0.6,
-      "strong_call_pct": 52.76381909547738,
-      "accuracy": 0.964824120603015,
-      "f1": 0.9655172413793104,
-      "avg_quality": 0.9475752711296082,
-      "pgr_pct": 93.37224584012999,
-      "avg_cost_per_1k_usd": 1.3844221105527639,
-      "cost_savings_pct": 42.31574539363484
+      "strong_call_pct": 54.054054054054056,
+      "accuracy": 0.8378378378378378,
+      "f1": 0.8571428571428571,
+      "avg_quality": 0.8296595215797424,
+      "pgr_pct": 78.00823417314447,
+      "avg_cost_per_1k_usd": 1.412162162162162,
+      "cost_savings_pct": 41.159909909909906
     },
     {
       "threshold": 0.7,
-      "strong_call_pct": 52.26130653266332,
-      "accuracy": 0.9698492462311558,
-      "f1": 0.9702970297029703,
-      "avg_quality": 0.9473100900650024,
-      "pgr_pct": 93.25511868569065,
-      "avg_cost_per_1k_usd": 1.3736180904522615,
-      "cost_savings_pct": 42.76591289782243
+      "strong_call_pct": 51.35135135135135,
+      "accuracy": 0.8108108108108109,
+      "f1": 0.8292682926829268,
+      "avg_quality": 0.8169919848442078,
+      "pgr_pct": 73.67296220737688,
+      "avg_cost_per_1k_usd": 1.354054054054054,
+      "cost_savings_pct": 43.58108108108109
     },
     {
       "threshold": 0.8,
-      "strong_call_pct": 51.256281407035175,
-      "accuracy": 0.9698492462311558,
-      "f1": 0.97,
-      "avg_quality": 0.9444742798805237,
-      "pgr_pct": 92.00257685005091,
-      "avg_cost_per_1k_usd": 1.3520100502512564,
-      "cost_savings_pct": 43.66624790619764
+      "strong_call_pct": 51.35135135135135,
+      "accuracy": 0.8108108108108109,
+      "f1": 0.8292682926829268,
+      "avg_quality": 0.8169919848442078,
+      "pgr_pct": 73.67296220737688,
+      "avg_cost_per_1k_usd": 1.354054054054054,
+      "cost_savings_pct": 43.58108108108109
     },
     {
       "threshold": 0.9,
-      "strong_call_pct": 45.7286432160804,
-      "accuracy": 0.914572864321608,
-      "f1": 0.91005291005291,
-      "avg_quality": 0.917820155620575,
-      "pgr_pct": 80.22978404796079,
-      "avg_cost_per_1k_usd": 1.2331658291457286,
-      "cost_savings_pct": 48.618090452261306
+      "strong_call_pct": 43.24324324324324,
+      "accuracy": 0.7297297297297297,
+      "f1": 0.7368421052631579,
+      "avg_quality": 0.7710784077644348,
+      "pgr_pct": 57.95973810409214,
+      "avg_cost_per_1k_usd": 1.1797297297297296,
+      "cost_savings_pct": 50.844594594594604
     }
-  ]
+  ],
+  "optimal_tau_torch": 0.3,
+  "default_router": "sklearn",
+  "httpx_router_backend": "sklearn",
+  "httpx_torch_run": {
+    "local_offload_pct": 41.67,
+    "cost_per_1k_usd": 1.5856,
+    "quality_score": 0.9576
+  }
 }

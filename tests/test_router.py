@@ -97,3 +97,37 @@ def test_unified_occam_router_and_threshold_sweep(tmp_path: Path) -> None:
     )
     assert len(sweep) == 3
     assert sweep[0]["strong_call_pct"] >= sweep[-1]["strong_call_pct"]
+
+
+def test_from_sklearn_artifacts_fallback_and_non_destructive(tmp_path: Path) -> None:
+    import pandas as pd
+    import pytest
+
+    graph = RepoGraphBuilder().build_from_directory(PACKAGE_SRC)
+    ds = build_routing_dataset(repo_graph=graph, n_samples=120, val_ratio=0.25, seed=31)
+    df_csv = pd.DataFrame(ds.X_train, columns=list(FEATURE_NAMES))
+    df_csv["label"] = ds.y_train
+
+    # Case (a): CSV only -> returns sklearn backend router
+    csv_only_dir = tmp_path / "csv_only"
+    csv_only_dir.mkdir()
+    df_csv.to_csv(csv_only_dir / "router_training_dataset.csv", index=False)
+    r_a = OccamRouter.from_sklearn_artifacts(csv_only_dir, threshold=0.45)
+    assert r_a.backend_name == "sklearn"
+    assert not (csv_only_dir / "sklearn_router.joblib").exists()
+
+    # Case (b): corrupt joblib + CSV -> refits in memory and leaves corrupt joblib untouched
+    corrupt_dir = tmp_path / "corrupt_joblib"
+    corrupt_dir.mkdir()
+    corrupt_path = corrupt_dir / "sklearn_router.joblib"
+    corrupt_path.write_bytes(b"garbage")
+    df_csv.to_csv(corrupt_dir / "router_training_dataset.csv", index=False)
+    r_b = OccamRouter.from_sklearn_artifacts(corrupt_dir, threshold=0.45)
+    assert r_b.backend_name == "sklearn"
+    assert corrupt_path.read_bytes() == b"garbage"
+
+    # Case (c): empty directory raises FileNotFoundError
+    empty_dir = tmp_path / "empty"
+    empty_dir.mkdir()
+    with pytest.raises(FileNotFoundError):
+        OccamRouter.from_sklearn_artifacts(empty_dir)

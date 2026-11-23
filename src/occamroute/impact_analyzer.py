@@ -17,16 +17,21 @@ from occamroute.router import OccamRouter, RoutingDecision, TorchComplexityRoute
 
 
 def load_default_router(repo_graph: RepoGraph, threshold: float = 0.30) -> OccamRouter:
-    """Load trained PyTorch/Sklearn router checkpoint or fit a lightweight fallback."""
-    candidates = [
-        repo_graph.root_dir / "artifacts" / "torch_router.pt",
-        repo_graph.root_dir.parent / "artifacts" / "torch_router.pt",
-        repo_graph.root_dir.parent.parent / "artifacts" / "torch_router.pt",
-        Path("artifacts/torch_router.pt"),
+    """Load trained GBDT (default) or PyTorch router checkpoint, or fit a lightweight fallback."""
+    art_dirs = [
+        repo_graph.root_dir / "artifacts",
+        repo_graph.root_dir.parent / "artifacts",
+        repo_graph.root_dir.parent.parent / "artifacts",
+        Path("artifacts"),
     ]
-    for ckpt in candidates:
-        if ckpt.exists():
-            return OccamRouter.from_artifact(ckpt, threshold=threshold)
+    for art_dir in art_dirs:
+        if (art_dir / "sklearn_router.joblib").exists() or (art_dir / "router_training_dataset.csv").exists():
+            return OccamRouter.from_sklearn_artifacts(art_dir, threshold=threshold)
+
+    for art_dir in art_dirs:
+        pt_ckpt = art_dir / "torch_router.pt"
+        if pt_ckpt.exists():
+            return OccamRouter.from_artifact(pt_ckpt, threshold=threshold)
 
     ds = build_routing_dataset(repo_graph=repo_graph, n_samples=180, val_ratio=0.2, seed=42)
     pt = TorchComplexityRouter(TorchRouterConfig(epochs=60, seed=42)).fit(ds.X_train, ds.y_train)

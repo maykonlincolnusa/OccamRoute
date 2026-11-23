@@ -1,15 +1,15 @@
 # OccamRoute — Surgical AST Context Slicing & Cost-Quality LLM Routing Engine
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-/blob/main/notebooks/01_occamroute_colab_benchmark.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/maykonlincolnusa/OccamRoute/blob/main/notebooks/01_occamroute_colab_benchmark.ipynb)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![Colab Tesla T4 Verified](https://img.shields.io/badge/Colab%20Tesla%20T4-Peak%20VRAM%205.88%20GB-10b981.svg)](notebooks/01_occamroute_colab_benchmark.ipynb)
-[![PyTorch ROC-AUC](https://img.shields.io/badge/PyTorch%20MLP%20AUC-0.983-38bdf8.svg)](artifacts/router_metrics.json)
+[![Colab NVIDIA L4 Verified](https://img.shields.io/badge/Colab%20NVIDIA%20L4-Peak%20VRAM%205.78%20GB-10b981.svg)](notebooks/01_occamroute_colab_benchmark.ipynb)
+[![GBDT LORO AUC](https://img.shields.io/badge/GBDT%20LORO%20AUC-0.941-38bdf8.svg)](artifacts/router_metrics.json)
 [![Token Savings](https://img.shields.io/badge/Token%20Savings--94.5%25-10b981.svg)](artifacts/swebench_eval_results.csv)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](pyproject.toml)
 
-**OccamRoute** is a deterministic-plus-ML **AST code-graph context compression** and **adaptive LLM complexity routing engine** built for autonomous coding agents, IDE copilots, and large-scale PR triage systems. Instead of saturating long-context windows with brute-force source dumps or severing call hierarchies via flat vector chunking, OccamRoute extracts a **token-budgeted k-hop AST dependency subgraph**, mitigates *Lost in the Middle* degradation through **U-shaped position-aware ordering**, and dynamically routes traffic between **4-bit quantized local GPUs** and **frontier reasoning models** via calibrated **PyTorch** and **Scikit-learn** classifiers.
+**OccamRoute** is a deterministic-plus-ML **AST code-graph context compression** and **adaptive LLM complexity routing engine** built for autonomous coding agents, IDE copilots, and large-scale PR triage systems. Instead of saturating long-context windows with brute-force source dumps or severing call hierarchies via flat vector chunking, OccamRoute extracts a **token-budgeted k-hop AST dependency subgraph**, mitigates *Lost in the Middle* degradation through **U-shaped position-aware ordering**, and routes traffic between **4-bit quantized local GPUs** and **frontier reasoning models** via calibrated **Scikit-learn GBDT (default)** and **PyTorch MLP** classifiers.
 
-> **Verified on NVIDIA Tesla T4 (`5.88 GB` Peak VRAM):** **94.5% fewer input tokens** (`709.8` vs `12,981.8` tokens), **1.00 File & Function Recall**, **0.828 Symbol F1** (vs `0.218` FAISS Naive RAG), and **89.6% lower inference spend** (`$1.79` vs `$17.17` per 1,000 agent runs).
+> **Verified on NVIDIA L4 (`5.78 GB` Peak VRAM, Empirical v2):** **94.5% fewer input tokens** (`709.8` vs `12,981.8` tokens), **1.000 File & Function Recall**, **0.828 Symbol F1** (vs `0.218` FAISS Naive RAG), **`0.941` LORO ROC-AUC** on unseen repositories, and **94.9% lower benchmark cost** (`$0.88` vs `$17.17` per 1,000 runs with GBDT default; `$1.59` / `0.958` Quality / `83.9%` PGR in the PyTorch hybrid run).
 
 ---
 
@@ -20,8 +20,8 @@ flowchart LR
     Q["Developer / Agent Query"] --> AST["Deterministic AST Parser (RepoGraph + PageRank)"]
     AST --> Slice["Surgical k-Hop Context Slicer (Hard Token Budget + U-Ordering)"]
     Slice --> Feat["17-D Topological Feature Extractor (Entropy, Cyclomatic, Centrality)"]
-    Feat --> Router{"Calibrated ML Router (PyTorch MLP / GBDT, P_strong >= tau)"}
-    Router -- "P_strong < tau" --> Weak["Local 4-bit GPU (Qwen2.5-Coder-7B NF4, 5.88 GB VRAM)"]
+    Feat --> Router{"Calibrated ML Router (GBDT default / PyTorch MLP, P_strong >= tau)"}
+    Router -- "P_strong < tau" --> Weak["Local 4-bit GPU (Qwen2.5-Coder-7B NF4, 5.78 GB VRAM)"]
     Router -- "P_strong >= tau" --> Strong["Frontier Reasoning Model (Multi-File / High-Entropy Refactors)"]
 ```
 
@@ -36,31 +36,45 @@ As AI coding systems operate over multi-million-line repositories, teams hit two
 | **Anthropic & OpenAI** (Agentic Coding Loops) | Iterative tool-use loops compound context tokens quadratically across multi-turn repository exploration. | Hard-budgeted **k-hop PageRank subgraphs** preserve `1.00` call-chain recall inside `~710` avg tokens (`-94.5%`). |
 | **Google** (Monorepo Search & Assist) | Multi-million-file monorepos fracture under naive 512-token text chunking (`0.218` Symbol F1). | Deterministic AST edge traversal + **U-shaped ordering** reduces middle-burial from `44.4%` to `12.8%`. |
 | **Cursor** (Low-Latency IDE Context) | Real-time inline edits and Composer chats demand sub-5ms structural context selection before generation. | In-memory `RepoGraph` slices subgraphs in `< 2 ms` and computes 17-D routing verdicts in `~0.08 ms`. |
-| **Meta** (Quantized Open-Weight Fleets) | Routing trivial lookups to frontier endpoints wastes capacity while self-hosted 4-bit Llama/Qwen clusters sit underutilized. | Calibrated **PyTorch MLP (`AUC=0.983`)** + **GBDT (`AUC=0.982`)** offload low-complexity queries to `5.88 GB` GPUs. |
-| **DeepSeek** (Cost-Efficiency & Reasoning Tiering) | Balancing sparse local execution against deep multi-file reasoning models requires calibrated uncertainty boundaries. | RouteLLM-style threshold sweep optimizes **Performance Gap Recovered (PGR)** per inference dollar. |
-| **TikTok / ByteDance** (Microservice FinOps) | High-throughput CI/CD PR triage requires strict per-run token governance across polyglot service graphs. | Cuts benchmark spend from **`$17.17` → `$1.79` per 1,000 runs** (`$153.8k / mo` saved at `10M runs/mo`). |
+| **Meta** (Quantized Open-Weight Fleets) | Routing trivial lookups to frontier endpoints wastes capacity while self-hosted 4-bit Llama/Qwen clusters sit underutilized. | Calibrated **GBDT (`LORO AUC=0.941`)** generalizes across unseen repositories (`requests`, `flask`) under `5.78 GB` peak VRAM. |
+| **DeepSeek** (Cost-Efficiency & Reasoning Tiering) | Balancing sparse local execution against deep multi-file reasoning models requires calibrated uncertainty boundaries. | Empirical L4 outcome labeling + RouteLLM threshold sweeps expose real cross-repo generalization and cost/quality trade-offs. |
+| **TikTok / ByteDance** (Microservice FinOps) | High-throughput CI/CD PR triage requires strict per-run token governance across polyglot service graphs. | Cuts measured benchmark spend from **`$17.17` → `$0.88` per 1,000 runs** (GBDT default, `$162.9k / mo` saved at `10M runs/mo`; `$155.8k / mo` with PyTorch hybrid). |
 
 ---
 
-## Verified GPU Benchmark Results (`encode/httpx@0.28.1` + Live FAISS + 4-bit NF4)
+## Verified GPU Benchmark Results (`encode/httpx@0.28.1` + Live FAISS + 4-bit NF4 on NVIDIA L4)
 
-Executed on **Google Colab NVIDIA Tesla T4 (`14.56 GB` VRAM)** via [colab_gpu_train_eval.py](scripts/colab_gpu_train_eval.py) comparing **Brute Force**, **Naive RAG (FAISS + `BAAI/bge-small-en-v1.5`)**, **Unbounded AST 2-Hop**, and **OccamRoute (ML + Live 4-bit `Qwen/Qwen2.5-Coder-7B-Instruct`)**:
+Executed on **Google Colab NVIDIA L4 (`22.03 GB` VRAM)** via [colab_l4_train_v2.py](scripts/colab_l4_train_v2.py) and [colab_l4_httpx_gbdt.py](scripts/colab_l4_httpx_gbdt.py) comparing **Brute Force**, **Naive RAG (FAISS + `BAAI/bge-small-en-v1.5`)**, **Unbounded AST 2-Hop**, and **OccamRoute (ML)** using live **4-bit NF4 `Qwen/Qwen2.5-Coder-7B-Instruct`** (`5.78 GB` Peak VRAM):
 
 | Pipeline | Avg Tokens | Token Savings | File Recall | Func Recall | Symbol F1 | Middle-Burial | Quality | Cost / 1k Runs |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Brute Force** | 12,981.8 | 0.0% | 1.000 | 1.000 | 0.076 | 29.6% | 0.808 | $17.17 |
 | **Naive RAG (FAISS + BGE-small)** | 2,462.8 | +81.0% | 0.833 | 0.744 | 0.218 | 22.9% | 0.674 | $4.02 |
 | **Unbounded AST 2-Hop** | 4,476.6 | +65.5% | 0.917 | 0.942 | 0.232 | 44.4% | 0.778 | $6.54 |
-| **OccamRoute (ML)** | **709.8** | **+94.5%** | **1.000** | **1.000** | **0.828** | **12.8%** | **0.956** | **$1.79** |
+| **OccamRoute (ML — GBDT Default)** | **709.8** | **+94.5%** | **1.000** | **1.000** | **0.828** | **12.8%** | **0.859** | **$0.88** |
 
-### ML Router Calibration & Validation (Tesla T4 CUDA)
-- **PyTorch Tabular MLP (`TorchComplexityRouter`, `.pt`):** `ROC-AUC = 0.983` | `Accuracy = 0.965` | `F1 = 0.966` | `Brier = 0.031` | `ECE = 0.036`
-- **Scikit-learn Calibrated GBDT (`SklearnComplexityRouter`, `.joblib`):** `ROC-AUC = 0.982` | `Accuracy = 0.975` | `F1 = 0.975` | `Brier = 0.034` | `ECE = 0.053`
+> *PyTorch MLP `httpx` companion run on the same L4 setup:* `41.67%` local offload, `0.958` Quality (`83.9%` PGR), `$1.59 / 1k` runs. Both routers outperform Brute Force (`0.808`), Unbounded AST (`0.778`), and Naive RAG (`0.674`) in both quality and token cost.
 
-![OccamRoute Pareto Frontier comparing Brute Force, Naive RAG, Unbounded AST 2-Hop, and OccamRoute on NVIDIA Tesla T4](docs/assets/pareto_frontier.png)
+### v2 Training Methodology (Empirical, Multi-Repo + LORO)
+*Supersedes v1 (Tesla T4 synthetic archetypes, retained only in git history):*
+- **178 Real Multi-Repo Tasks:** `58` ground-truth issues from `princeton-nlp/SWE-bench_Lite` + `120` focused single-symbol and multi-hop call-chain tasks mined directly from AST subgraphs.
+- **Strict Repository Split (LORO):** Trained on `6` repositories (`pytest-dev/pytest`, `sphinx-doc/sphinx`, `scikit-learn/scikit-learn`, `pylint-dev/pylint`, `pydata/xarray`, `mwaskom/seaborn` — `145` pool tasks, `37` stratified val, `280` intra-class balanced train rows strictly inside train) and evaluated **Leave-One-Repo-Out (LORO)** on `33` tasks from `2` completely unseen repositories (`psf/requests`, `pallets/flask`).
+- **Empirical Outcome Labels:** Every task was executed live on NVIDIA L4 with 4-bit NF4 `Qwen/Qwen2.5-Coder-7B-Instruct` (`105` `strong_frontier` / `73` `weak_local`, `59.0%` positive rate).
+
+### ML Router Validation & Dual-Router Diagnosis (Colab L4)
+
+| Router Backend | Val Accuracy | Val ROC-AUC | Val F1 | Val Brier / ECE | Unseen LORO Acc | Unseen LORO AUC | Unseen LORO F1 / ECE |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Sklearn Calibrated GBDT (Default)** | **0.946** | **0.991** | **0.957** | `0.046 / 0.119` | **0.818** | **0.941** | `0.833 / 0.155` |
+| **PyTorch Tabular MLP (`.pt`)** | 0.838 | 0.906 | 0.857 | `0.133 / 0.164` | 0.576 | 0.548 | `0.632 / 0.402` |
+
+- **Local CPU Reproduction (`scikit-learn 1.9.1`):** Refitting `SklearnComplexityRouter` from [router_training_dataset.csv](artifacts/router_training_dataset.csv) reproduces Colab's unseen LORO generalization (`Acc = 0.818`, `ROC-AUC = 0.941`, `F1 = 0.833`, `Brier = 0.135`, `ECE = 0.155`).
+- **Why GBDT is Default & Honest Trade-off:** PyTorch MLP overfit training-repo patterns (`LORO AUC = 0.548`), whereas GBDT transferred cleanly (`LORO AUC = 0.941`), making GBDT the production default. Conversely, on the `12` concise zero-shot `httpx` prompts (`15–32` tokens), GBDT's `69%` split weight on `query_token_count` routed `100%` to `weak_local` (`Q = 0.859`, `$0.88/1k`, `PGR = 0.0%`), whereas the PyTorch MLP's LayerNorm features escalated complex traces (`41.7%` local offload, `Q = 0.958`, `PGR = 83.9%`, `$1.59/1k`).
+
+![OccamRoute Pareto Frontier comparing Brute Force, Naive RAG, Unbounded AST 2-Hop, and OccamRoute GBDT on NVIDIA L4](docs/assets/pareto_frontier.png)
 ![OccamRoute Per-Task Log Token Compression and Lost-in-the-Middle Burial Reduction](docs/assets/token_compression.png)
 
-> Additional training diagnostics & feature importance plots: [router_learning_diagnostics.png](assets/router_learning_diagnostics.png) · [router_feature_and_pgr_sweep.png](assets/router_feature_and_pgr_sweep.png)
+> Additional L4 diagnostics & LORO curves: [router_learning_diagnostics.png](assets/router_learning_diagnostics.png) · [router_feature_and_pgr_sweep.png](assets/router_feature_and_pgr_sweep.png) · [swebench_pareto_frontier.png](assets/swebench_pareto_frontier.png) · [swebench_task_breakdown.png](assets/swebench_task_breakdown.png)
 
 ---
 
@@ -89,12 +103,12 @@ OccamRoute/
 │   │   └── visualizer.py                        # Dark-theme Matplotlib publication chart generator
 │   ├── router/
 │   │   ├── dataset_builder.py                   # RouteLLM topological dataset builder & augmentation
-│   │   ├── sklearn_router.py                    # Calibrated GBDT classifier (.joblib)
+│   │   ├── sklearn_router.py                    # Calibrated GBDT classifier (.joblib, default)
 │   │   ├── torch_router.py                      # TabularRouterMLP (LayerNorm + SiLU + Dropout, .pt)
-│   │   └── engine.py                            # Unified OccamRouter & threshold sweep
+│   │   └── engine.py                            # Unified OccamRouter, cross-version loader & threshold sweep
 │   └── dashboard/                               # FastAPI + Pydantic v2 telemetry & routing playground
-├── scripts/                                     # CLI/GPU training, Colab L4/T4 workflows & dashboard server
-├── artifacts/                                   # Checkpoints, telemetry JSON/CSV & standalone HTML snapshot
+├── scripts/                                     # Colab L4 v2 training/httpx scripts & dashboard server
+├── artifacts/                                   # L4 v2 checkpoints, 178-row real dataset, telemetry & HTML snapshot
 └── tests/                                       # Automated pytest suite (AST, Router, Benchmark, Dashboard, Tools)
 ```
 
@@ -123,7 +137,7 @@ from occamroute.benchmark import (
 )
 
 repo_graph = RepoGraphBuilder().build_from_directory("src/occamroute")
-router = OccamRouter.from_artifact("artifacts/torch_router.pt", threshold=0.30)
+router = OccamRouter.from_sklearn_artifacts("artifacts", threshold=0.30)
 tasks = build_repo_eval_tasks(repo_graph, max_tasks=8)
 
 evaluator = SWEBenchBenchmarkEvaluator(repo_graph=repo_graph, router=router, rag_backend="auto")
@@ -155,6 +169,6 @@ occamroute impact --repo . --ref HEAD~1 --markdown
   title={OccamRoute: Surgical AST Context Slicing and Adaptive Cost-Quality LLM Routing},
   author={Santos, Maykon Lincoln},
   year={2026},
-  url={https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-}
+  url={https://github.com/maykonlincolnusa/OccamRoute}
 }
 ```

@@ -73,6 +73,31 @@ class OccamRouter:
         )
         return cls(model=loaded, threshold=threshold)
 
+    @classmethod
+    def from_sklearn_artifacts(
+        cls,
+        artifacts_dir: Path | str,
+        threshold: float = 0.50,
+    ) -> OccamRouter:
+        """Load sklearn GBDT joblib or refit in memory from router_training_dataset.csv without overwriting disk."""
+        art_dir = Path(artifacts_dir)
+        joblib_path = art_dir / "sklearn_router.joblib"
+        csv_path = art_dir / "router_training_dataset.csv"
+        try:
+            return cls.from_artifact(joblib_path, backend="sklearn", threshold=threshold)
+        except Exception:
+            if csv_path.exists():
+                import pandas as pd
+
+                df = pd.read_csv(csv_path)
+                X = df[list(FEATURE_NAMES)].to_numpy(dtype=np.float32)
+                y = df["label"].to_numpy(dtype=np.int64)
+                model = SklearnComplexityRouter().fit(X, y)
+                return cls(model=model, threshold=threshold)
+            raise FileNotFoundError(
+                f"Neither loadable sklearn_router.joblib nor router_training_dataset.csv found in {art_dir}"
+            )
+
     def route_features(
         self,
         features: GraphComplexityFeatures | np.ndarray,

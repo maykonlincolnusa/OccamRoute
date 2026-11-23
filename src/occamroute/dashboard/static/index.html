@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OccamRoute — Surgical AST Context Slicing &amp; LLM Complexity Routing Control Plane</title>
-  <meta name="description" content="OccamRoute cuts AI coding agent token spend by 94.5% with 1.00 file/function recall using AST RepoGraph k-hop slicing, Position-Aware Ordering, and calibrated PyTorch/Scikit-learn LLM routing verified on NVIDIA Tesla T4." />
+  <meta name="description" content="OccamRoute cuts AI coding agent token spend by 94.5% with 1.00 file/function recall using AST RepoGraph k-hop slicing, Position-Aware Ordering, and calibrated GBDT (LORO AUC 0.941) / PyTorch LLM routing verified on NVIDIA L4." />
   <meta name="keywords" content="OccamRoute, LLM Routing, RouteLLM, RepoGraph, Lost in the Middle, AST Code Graph, AI Coding Agents, Context Engineering, FinOps AI, SWE-bench, PyTorch, Scikit-learn, NetworkX, 4-bit Quantization" />
   <meta name="author" content="Maykon Lincoln" />
-  <link rel="canonical" href="https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-" />
+  <link rel="canonical" href="https://github.com/maykonlincolnusa/OccamRoute" />
   <meta property="og:title" content="OccamRoute — Surgical AST Context &amp; Cost-Quality LLM Routing Engine" />
-  <meta property="og:description" content="Verified on NVIDIA Tesla T4 (5.88 GB Peak VRAM): -94.5% tokens, 0.828 Symbol F1, PyTorch ROC-AUC 0.983, $1.79 per 1k agent runs." />
+  <meta property="og:description" content="Verified on NVIDIA L4 (5.78 GB Peak VRAM): -94.5% tokens, 0.828 Symbol F1, GBDT LORO ROC-AUC 0.941, $0.88 per 1k agent runs." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-" />
+  <meta property="og:url" content="https://github.com/maykonlincolnusa/OccamRoute" />
   <meta property="og:image" content="/assets/swebench_pareto_frontier.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="OccamRoute — Surgical AST Context &amp; LLM Complexity Routing" />
-  <meta name="twitter:description" content="-94.5% tokens, 1.00 File/Function Recall, PyTorch ROC-AUC 0.983 on Colab Tesla T4 GPU." />
+  <meta name="twitter:description" content="-94.5% tokens, 1.00 File/Function Recall, GBDT LORO ROC-AUC 0.941 on Colab NVIDIA L4 GPU." />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -193,25 +193,25 @@
     </div>
     <div class="badges">
       <span class="pill live" id="badge-status">STATUS: ONLINE</span>
-      <span class="pill gpu" id="badge-t4">GPU: NVIDIA Tesla T4</span>
+      <span class="pill gpu" id="badge-t4">GPU: NVIDIA L4 (v2)</span>
       <span class="pill" id="badge-repo">REPO: ...</span>
       <span class="pill" id="badge-graph">AST: ...</span>
     </div>
   </header>
 
   <nav class="anchor-nav" aria-label="Dashboard sections">
-    <a href="#sec-kpis">KPIs T4</a>
+    <a href="#sec-kpis">KPIs L4 v2</a>
     <a href="#sec-hyperscale">Casos em Hiperescala (Google / Meta / TikTok)</a>
     <a href="#sec-pareto">Fronteira de Pareto &amp; RouteLLM</a>
     <a href="#sec-tasks">Resultados por Tarefa (T01–T12)</a>
     <a href="#sec-playground">Live Playground AST</a>
-    <a href="#gallery-section">Gráficos Tesla T4</a>
+    <a href="#gallery-section">Gráficos NVIDIA L4</a>
   </nav>
 
   <main>
     <div class="t4-banner" id="t4-banner">
-      <div><strong>Treinamento &amp; Benchmark Verificados em NVIDIA Tesla T4:</strong> Carregando metadados da execução CUDA...</div>
-      <span class="pill">SWE-bench Lite + encode/httpx@0.28.1</span>
+      <div><strong>Treinamento &amp; Benchmark Verificados em NVIDIA L4 (v2 Multi-Repo + LORO):</strong> Carregando metadados da execução CUDA...</div>
+      <span class="pill">178 Issues (SWE-bench + AST) + encode/httpx@0.28.1</span>
     </div>
 
     <!-- 8 Executive KPI Cards -->
@@ -232,12 +232,12 @@
         <div class="usecase-card">
           <div class="org">Meta — PR Triage &amp; Frota GPU 4-bit</div>
           <div class="prob">Problema: roteamento cego envia lookups simples para clusters caros em vez de modelos quantizados locais.</div>
-          <div class="sol">OccamRoute: Roteador PyTorch MLP (AUC 0.983) separa complexidade topológica usando 5.88 GB VRAM em 4-bit.</div>
+          <div class="sol">OccamRoute: Roteador GBDT (LORO AUC 0.941) generaliza para repos inéditos usando 5.78 GB VRAM em 4-bit.</div>
         </div>
         <div class="usecase-card">
           <div class="org">TikTok / ByteDance — Microsserviços &amp; FinOps</div>
           <div class="prob">Problema: latência de contexto e explosão de custo em milhões de chamadas de agentes em CI/CD.</div>
-          <div class="sol">OccamRoute: Slice + Route determinístico em &lt; 2 ms reduz custo projetado de $17.17 para $1.79 / 1k execuções.</div>
+          <div class="sol">OccamRoute: Slice + Route determinístico em &lt; 2 ms reduz custo projetado de $17.17 para $0.88 / 1k execuções.</div>
         </div>
         <div class="usecase-card">
           <div class="org">Amazon / Microsoft / Stripe — Incident SRE</div>
@@ -261,7 +261,7 @@
     <section class="grid-2" id="sec-pareto">
       <div class="panel">
         <div class="panel-head">
-          <h2 class="panel-title">Fronteira de Pareto (Resultados Reais Colab Tesla T4)</h2>
+          <h2 class="panel-title">Fronteira de Pareto (Resultados Reais Colab NVIDIA L4 v2)</h2>
           <span class="panel-note">Brute Force vs FAISS RAG vs Unbounded AST 2-Hop vs OccamRoute (ML)</span>
         </div>
         <canvas id="pareto-canvas" width="760" height="330"></canvas>
@@ -271,8 +271,8 @@
         <div class="panel-head">
           <h2 class="panel-title">Simulador RouteLLM (Threshold &tau; &rarr; PGR &amp; Custo)</h2>
           <select id="sim-backend">
-            <option value="torch">PyTorch Tabular MLP (CUDA T4)</option>
-            <option value="sklearn">Sklearn Calibrated GBDT</option>
+            <option value="sklearn" selected>Sklearn Calibrated GBDT (Default • LORO AUC 0.941)</option>
+            <option value="torch">PyTorch Tabular MLP (CUDA L4 • LORO AUC 0.548)</option>
           </select>
         </div>
         <div class="controls">
@@ -286,11 +286,11 @@
       </div>
     </section>
 
-    <!-- 4-Pipeline Table + Colab T4 Router Comparison -->
+    <!-- 4-Pipeline Table + Colab L4 Router Comparison -->
     <section class="grid-2">
       <div class="panel">
         <div class="panel-head">
-          <h2 class="panel-title">Benchmark dos 4 Pipelines (Tesla T4: FAISS + Qwen 4-bit)</h2>
+          <h2 class="panel-title">Benchmark dos 4 Pipelines (NVIDIA L4: FAISS + Qwen 4-bit)</h2>
           <span class="panel-note">Comparativo auditável por métrica</span>
         </div>
         <div style="overflow-x:auto;">
@@ -300,18 +300,18 @@
 
       <div class="panel">
         <div class="panel-head">
-          <h2 class="panel-title">Separabilidade Topológica (Cohen's d — Dataset T4)</h2>
+          <h2 class="panel-title">Separabilidade Topológica (Cohen's d — Dataset L4 v2)</h2>
           <span class="panel-note">Features que mais separam tarefas Low vs High</span>
         </div>
         <canvas id="cohen-canvas" width="640" height="260"></canvas>
       </div>
     </section>
 
-    <!-- Per-Task T4 Evaluation Table -->
+    <!-- Per-Task L4 Evaluation Table -->
     <section class="panel" id="sec-tasks" style="margin-bottom:18px;">
       <div class="panel-head">
-        <h2 class="panel-title">Detalhamento por Tarefa — Execução Tesla T4 (`OccamRoute (ML)` vs Baselines)</h2>
-        <span class="panel-note">Inclui latência real em `Qwen2.5-Coder-7B-Instruct` 4-bit (`live_t4_4bit`)</span>
+        <h2 class="panel-title">Detalhamento por Tarefa — Execução NVIDIA L4 (`OccamRoute GBDT` vs Baselines)</h2>
+        <span class="panel-note">Inclui latência real em `Qwen2.5-Coder-7B-Instruct` 4-bit (`live_l4_4bit`)</span>
       </div>
       <div style="overflow-x:auto;">
         <table id="per-task-table"></table>
@@ -358,10 +358,10 @@
       </div>
     </section>
 
-    <!-- Colab T4 Evidence Gallery -->
+    <!-- Colab L4 Evidence Gallery -->
     <section class="panel" id="gallery-section" style="margin-bottom:18px;">
       <div class="panel-head">
-        <h2 class="panel-title">Evidências Visuais Geradas na GPU Tesla T4 (`assets/*.png`)</h2>
+        <h2 class="panel-title">Evidências Visuais Geradas na GPU NVIDIA L4 (`assets/*.png`)</h2>
         <span class="panel-note">Renderizadas diretamente ao final do treinamento remoto</span>
       </div>
       <div class="gallery-grid" id="t4-gallery"></div>
@@ -426,11 +426,11 @@ function renderHeaderAndKPIs(data) {
     { label: "Compressão de Tokens", val: `-${fmt(k.token_savings_pct, 1)}%`, sub: `${Math.round(k.mean_occam_tokens || 0)} vs ${Math.round(k.mean_bf_tokens || 0)} tok (Brute Force)`, accent: "#10b981" },
     { label: "Custo / 1.000 Execuções", val: `$${fmt(k.cost_per_1k_usd, 2)}`, sub: `-${fmt(k.cost_savings_pct, 1)}% vs Brute Force ($${fmt(k.bf_cost_per_1k_usd, 2)})`, accent: "#38bdf8" },
     { label: "Recall (Arquivo / Função)", val: `${fmt(k.file_recall, 2)} / ${fmt(k.function_recall, 2)}`, sub: `Precision=${fmt(k.symbol_precision, 3)} | Symbol F1=${fmt(k.symbol_f1, 3)}`, accent: "#10b981" },
-    { label: "Grounded Quality Score", val: `${fmt(k.pgr_pct, 1)}% PGR`, sub: `Score=${fmt((data.pipeline_summary || []).find(p => String(p.pipeline).includes("OccamRoute"))?.quality_score ?? 0.956, 3)} (vs Brute Force 0.808)`, accent: "#38bdf8" },
+    { label: "Grounded Quality Score", val: `${fmt(k.pgr_pct, 1)}% PGR`, sub: `Score=${fmt((data.pipeline_summary || []).find(p => String(p.pipeline).includes("OccamRoute"))?.quality_score ?? 0.859, 3)} (vs Brute Force 0.808)`, accent: "#38bdf8" },
     { label: "Middle-Burial Exposure", val: `${fmt(k.middle_burial_pct, 1)}%`, sub: `vs ${fmt(k.bf_middle_burial_pct, 1)}% Brute Force (Lost in the Middle)`, accent: "#f59e0b" },
-    { label: "PyTorch MLP (T4 CUDA)", val: `AUC ${fmt(k.torch_roc_auc, 3)}`, sub: `Acc=${fmt(k.torch_accuracy * 100, 1)}% | Brier=${fmt(k.torch_brier, 3)} | ECE=${fmt(k.torch_ece, 3)}`, accent: "#a78bfa" },
-    { label: "Sklearn Calibrated GBDT", val: `AUC ${fmt(k.sklearn_roc_auc, 3)}`, sub: `Acc=${fmt(k.sklearn_accuracy * 100, 1)}% | Brier=${fmt(k.sklearn_brier, 3)} | ECE=${fmt(k.sklearn_ece, 3)}`, accent: "#38bdf8" },
-    { label: "Peak VRAM (T4 4-bit)", val: `${tm.peak_vram_gb ? fmt(tm.peak_vram_gb, 2) + " GB" : "5.88 GB"}`, sub: `Dentro do teto de 15 GB (Qwen2.5-Coder-7B NF4)`, accent: "#10b981" }
+    { label: "Sklearn GBDT (Default • L4)", val: `AUC ${fmt(k.sklearn_roc_auc, 3)}`, sub: `Acc=${fmt(k.sklearn_accuracy * 100, 1)}% | Brier=${fmt(k.sklearn_brier, 3)} | ECE=${fmt(k.sklearn_ece, 3)}`, accent: "#10b981" },
+    { label: "PyTorch MLP (L4 CUDA)", val: `AUC ${fmt(k.torch_roc_auc, 3)}`, sub: `Acc=${fmt(k.torch_accuracy * 100, 1)}% | Brier=${fmt(k.torch_brier, 3)} | ECE=${fmt(k.torch_ece, 3)}`, accent: "#a78bfa" },
+    { label: "Peak VRAM (L4 4-bit)", val: `${tm.peak_vram_gb ? fmt(tm.peak_vram_gb, 2) + " GB" : "5.78 GB"}`, sub: `Dentro do teto de 22 GB (Qwen2.5-Coder-7B NF4)`, accent: "#10b981" }
   ];
 
   document.getElementById("sec-kpis").innerHTML = cards.map(c => `
@@ -447,7 +447,7 @@ function updateFleetROI(data) {
   document.getElementById("fleet-vol-label").textContent = `${runs.toLocaleString()} runs/mês`;
   const k = data.kpis || {};
   const bfCost1k = Number(k.bf_cost_per_1k_usd || 17.17);
-  const ocCost1k = Number(k.cost_per_1k_usd || 1.79);
+  const ocCost1k = Number(k.cost_per_1k_usd || 0.88);
   const bfTok = Number(k.mean_bf_tokens || 12982);
   const ocTok = Number(k.mean_occam_tokens || 710);
 
@@ -648,10 +648,10 @@ function renderGallery(data) {
     return;
   }
   const labels = {
-    "swebench_pareto_frontier.png": "Pareto Frontier — Live FAISS + Qwen2.5-Coder-7B 4-bit (T4)",
-    "swebench_task_breakdown.png": "Per-Task Token Savings & T4 PyTorch Router P(strong)",
-    "router_learning_diagnostics.png": "ROC, Probability Calibration (ECE=0.036) & CUDA Loss",
-    "router_feature_and_pgr_sweep.png": "Top 10 Topological Features & RouteLLM PGR Sweep"
+    "swebench_pareto_frontier.png": "Pareto Frontier — Live FAISS + Qwen2.5-Coder-7B 4-bit (L4 v2 GBDT)",
+    "swebench_task_breakdown.png": "Per-Task Token Savings & L4 GBDT Router P(strong)",
+    "router_learning_diagnostics.png": "ROC (Val vs Unseen LORO), Calibration & CUDA Loss (L4 v2)",
+    "router_feature_and_pgr_sweep.png": "Top 10 Empirical AST Features & RouteLLM PGR Sweep (L4 v2)"
   };
   document.getElementById("t4-gallery").innerHTML = imgs.map(name => `
     <div class="gallery-card">
@@ -730,8 +730,8 @@ function renderLiveRoute(res) {
     `${res.context_tokens}/${res.token_budget} tok (${fmt(res.compression_ratio * 100, 1)}% compr.) | ${res.slicing_latency_ms} ms`;
 
   const verdicts = [
-    { title: "PyTorch Tabular MLP (Colab T4)", d: res.torch_decision },
-    { title: "Sklearn Calibrated GBDT", d: res.sklearn_decision }
+    { title: "Sklearn Calibrated GBDT (Default • LORO AUC 0.941)", d: res.sklearn_decision },
+    { title: "PyTorch Tabular MLP (Colab L4 • LORO AUC 0.548)", d: res.torch_decision }
   ];
   document.getElementById("live-verdicts").innerHTML = verdicts.map(v => `
     <div class="verdict-box">
