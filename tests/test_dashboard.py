@@ -30,6 +30,8 @@ def pipeline(x: int) -> int:
     r_root = client.get("/")
     assert r_root.status_code == 200
     assert "OccamRoute" in r_root.text
+    assert "application/ld+json" in r_root.text
+    assert "og:title" in r_root.text
 
     r_health = client.get("/api/health")
     assert r_health.status_code == 200
@@ -39,6 +41,7 @@ def pipeline(x: int) -> int:
     assert r_kpis.status_code == 200
     kpis_payload = r_kpis.json()
     assert "kpis" in kpis_payload
+    assert "training_meta" in kpis_payload
     assert "pgr_pct" in kpis_payload["kpis"]
     assert "torch_roc_auc" in kpis_payload["kpis"]
 

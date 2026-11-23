@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from occamroute.context_slicer import SurgicalContextSlicer
@@ -350,10 +351,22 @@ class DashboardState:
             if nid in self.repo_graph.nodes
         ]
 
+        assets_dir = self.root / "assets"
+        t4_gallery = sorted(p.name for p in assets_dir.glob("*.png")) if assets_dir.exists() else []
+        training_meta = {
+            "trained_on": router_metrics.get("trained_on", "Local CPU"),
+            "peak_vram_gb": router_metrics.get("peak_vram_gb", None),
+            "faiss_enabled": bool(router_metrics.get("faiss_enabled", False)),
+            "live_4bit_model": router_metrics.get("live_4bit_model", "Qwen/Qwen2.5-Coder-7B-Instruct"),
+            "swebench_tasks_loaded": int(router_metrics.get("swebench_tasks_loaded", 0)),
+            "t4_gallery": t4_gallery,
+        }
+
         return {
             "project": "OccamRoute",
             "repo_label": self.repo_label,
             "repo_stats": self.repo_graph.summary_stats(),
+            "training_meta": training_meta,
             "kpis": kpis,
             "pipeline_summary": pipeline_summary,
             "router_metrics": router_metrics,
@@ -460,6 +473,10 @@ def create_app(project_root: Path | None = None) -> FastAPI:
     )
     state = DashboardState(project_root=project_root)
     fastapi_app.state.occam_state = state
+
+    assets_dir = state.root / "assets"
+    if assets_dir.exists():
+        fastapi_app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
     @fastapi_app.get("/", response_class=HTMLResponse)
     def serve_index() -> HTMLResponse:
