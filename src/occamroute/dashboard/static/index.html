@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OccamRoute — Structural Context & Cost-Quality Observability</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: #111827;
+      --panel-2: #0f172a;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --green: #10b981;
+      --cyan: #38bdf8;
+      --amber: #f59e0b;
+      --red: #f87171;
+      --violet: #a78bfa;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top right, #131c31 0%, var(--bg) 52%);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.45;
+    }
+    .container { max-width: 1440px; margin: 0 auto; padding: 20px 24px 48px; }
+    header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+      gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--border); margin-bottom: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #38bdf8);
+      display: grid; place-items: center; font-weight: 800; color: #051014; font-size: 18px;
+    }
+    h1 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      font-size: 12px; padding: 5px 10px; border-radius: 999px;
+      background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+      font-family: var(--mono);
+    }
+    .pill.live { border-color: rgba(16, 185, 129, 0.45); color: #6ee7b7; }
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px; margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; position: relative; overflow: hidden;
+    }
+    .kpi-card::after {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent, var(--cyan)); opacity: 0.85;
+    }
+    .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .kpi-val { font-size: 26px; font-weight: 700; margin: 6px 0 4px; font-family: var(--mono); }
+    .kpi-sub { font-size: 12px; color: var(--muted); }
+    .grid-2 { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; margin-bottom: 18px; }
+    .grid-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+    @media (max-width: 1020px) { .grid-2, .grid-eq { grid-template-columns: 1fr; } }
+    .panel {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    }
+    .panel-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .panel-title { font-size: 15px; font-weight: 600; margin: 0; }
+    .panel-note { font-size: 12px; color: var(--muted); }
+    .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+    label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+    input[type="text"], input[type="number"], select {
+      background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: var(--sans);
+    }
+    input[type="range"] { accent-color: var(--green); cursor: pointer; }
+    button {
+      background: linear-gradient(135deg, #10b981, #059669); color: #04130d;
+      border: none; border-radius: 8px; padding: 9px 15px; font-weight: 700;
+      font-size: 13px; cursor: pointer; transition: opacity .15s;
+    }
+    button:hover { opacity: 0.9; }
+    button.ghost {
+      background: var(--panel-2); color: var(--text); border: 1px solid var(--border); font-weight: 500;
+      padding: 6px 10px; font-size: 12px;
+    }
+    button.ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+    canvas, svg.chart { width: 100%; display: block; background: var(--panel-2); border-radius: 10px; border: 1px solid var(--border); }
+    .sim-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;
+    }
+    .mini-stat {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+    }
+    .mini-stat .k { font-size: 11px; color: var(--muted); }
+    .mini-stat .v { font-size: 16px; font-weight: 700; font-family: var(--mono); margin-top: 2px; }
+    .verdict-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+    .verdict-box {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    }
+    .tier-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-family: var(--mono); font-weight: 700;
+    }
+    .tier-weak { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.45); }
+    .tier-strong { background: rgba(248, 113, 113, 0.16); color: #fca5a5; border: 1px solid rgba(248, 113, 113, 0.45); }
+    .u-strip { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .u-node {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+      font-size: 12px; font-family: var(--mono);
+    }
+    .u-node.primacy_start, .u-node.recency_end { border-color: rgba(16, 185, 129, 0.65); }
+    .u-node.middle { border-color: rgba(245, 158, 11, 0.45); }
+    .zone-tag { font-size: 10px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 2px; }
+    pre.codebox {
+      background: #070b12; border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+      font-family: var(--mono); font-size: 12px; overflow: auto; max-height: 290px; color: #cbd5e1; margin: 0;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    td.num, th.num { text-align: right; font-family: var(--mono); }
+    tr.highlight { background: rgba(16, 185, 129, 0.08); }
+    .bar-wrap { background: #1e293b; border-radius: 999px; height: 7px; overflow: hidden; min-width: 72px; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--green)); }
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 8px; }
+    .feat-item { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; font-size: 11.5px; }
+    .feat-item .top { display: flex; justify-content: space-between; font-family: var(--mono); margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="logo">OR</div>
+      <div>
+        <h1>OccamRoute — Control Plane & KPI Observability</h1>
+        <div class="subtitle">AST RepoGraph (arXiv:2410.14684) • Position-Aware Context (arXiv:2307.03172) • RouteLLM PGR (arXiv:2406.18665)</div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="pill live" id="badge-status">STATUS: ONLINE</span>
+      <span class="pill" id="badge-repo">REPO: loading...</span>
+      <span class="pill" id="badge-graph">GRAPH: ...</span>
+    </div>
+  </header>
+
+  <!-- 8 Executive KPI Cards -->
+  <section class="kpi-grid" id="kpi-cards"></section>
+
+  <!-- Pareto Frontier + RouteLLM Threshold Simulator -->
+  <section class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Pareto Frontier: Resolution Quality vs. Context Tokens</h2>
+        <span class="panel-note">Comparativo controlado dos 4 pipelines + âncoras Weak/Strong</span>
+      </div>
+      <canvas id="pareto-canvas" width="760" height="330"></canvas>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Simulador RouteLLM (Threshold &tau; &rarr; PGR &amp; Custo)</h2>
+        <select id="sim-backend">
+          <option value="torch">PyTorch Tabular MLP (.pt)</option>
+          <option value="sklearn">Sklearn Calibrated GBDT (.joblib)</option>
+        </select>
+      </div>
+      <div class="controls">
+        <label style="flex:1">
+          Threshold &tau;: <strong id="tau-label" style="color:#6ee7b7;font-family:var(--mono)">0.50</strong>
+          <input id="tau-slider" type="range" min="0.10" max="0.90" step="0.10" value="0.50" />
+        </label>
+      </div>
+      <canvas id="sweep-canvas" width="640" height="215"></canvas>
+      <div class="sim-stats" id="sim-stats"></div>
+    </div>
+  </section>
+
+  <!-- Live Playground: Slicer + AST Subgraph + Router + 17-D Features -->
+  <section class="panel" style="margin-bottom:18px;">
+    <div class="panel-head">
+      <h2 class="panel-title">Live Surgical Slicer &amp; ML Router Playground</h2>
+      <div class="controls" style="margin:0;">
+        <button class="ghost preset-btn" data-q="Explain `codes.is_redirect` and `codes.get_reason_phrase`.">Preset: Lookup Simples</button>
+        <button class="ghost preset-btn" data-q="Trace `BaseClient._redirect_headers`, `_same_origin`, and `_is_https_redirect` for cross-origin leaks.">Preset: Cross-Origin Trace</button>
+        <button class="ghost preset-btn" data-q="Trace `Client.send` through `_send_handling_auth`, `_send_handling_redirects` and `HTTPTransport.handle_request`.">Preset: Fluxo Multi-Hop</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input id="live-query" type="text" style="flex:1;min-width:260px" value="Trace `BaseClient._redirect_headers`, `_same_origin`, and `_is_https_redirect` for cross-origin leaks." />
+      <label>Budget (tok)<input id="live-budget" type="number" value="1500" min="200" max="6000" step="100" style="width:95px" /></label>
+      <label>Max Nós<input id="live-max-syms" type="number" value="6" min="1" max="12" style="width:76px" /></label>
+      <label>k-Hop<input id="live-khop" type="number" value="2" min="0" max="3" style="width:68px" /></label>
+      <button id="run-route-btn">Executar Slice + Route</button>
+    </div>
+
+    <div class="verdict-row" id="live-verdicts"></div>
+
+    <div class="grid-eq" style="margin-bottom:0;">
+      <div>
+        <div class="panel-head" style="margin-bottom:6px;">
+          <span class="panel-title" style="font-size:13.5px;">Subgrafo AST Extraído (`networkx`) &amp; Position-Aware Ordering (U-Shape)</span>
+          <span class="panel-note" id="live-slice-meta"></span>
+        </div>
+        <svg id="subgraph-svg" class="chart" viewBox="0 0 620 220"></svg>
+        <div class="u-strip" id="u-order-strip"></div>
+      </div>
+      <div>
+        <div class="panel-head" style="margin-bottom:6px;">
+          <span class="panel-title" style="font-size:13.5px;">Vetor Topológico (17 Features) &amp; Contexto Cirúrgico</span>
+        </div>
+        <div class="feat-grid" id="live-features" style="margin-bottom:10px;"></div>
+        <pre class="codebox" id="live-context">Aguardando execução...</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4-Pipeline Table + 17-Feature Cohen's d + PageRank Hubs -->
+  <section class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Benchmark Comparativo (4 Pipelines Controlados)</h2>
+        <span class="panel-note">File/Func Recall, Middle-Burial, PGR &amp; Custo/1k</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="pipeline-table"></table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Separabilidade Topológica (Cohen's d: Strong vs. Weak)</h2>
+        <span class="panel-note">Poder discriminativo das 17 features do subgrafo</span>
+      </div>
+      <canvas id="cohen-canvas" width="640" height="270"></canvas>
+    </div>
+  </section>
+
+  <!-- Live Telemetry & Per-Task Eval -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Telemetria Ao Vivo &amp; Histórico de Roteamento</h2>
+      <span class="panel-note">Atualizado automaticamente a cada execução no Playground</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="telemetry-table"></table>
+    </div>
+  </section>
+</div>
+
+<script>
+const STATE = { kpis: window.__OCCAMROUTE_INITIAL_KPIS__ || null };
+const PALETTE = {
+  "Brute Force": "#f87171",
+  "Naive RAG": "#f59e0b",
+  "Unbounded AST 2-Hop": "#a78bfa",
+  "OccamRoute (ML)": "#10b981"
+};
+
+function fmt(n, d = 2) {
+  return Number(n ?? 0).toFixed(d);
+}
+
+function renderKPIs(data) {
+  const k = data.kpis || {};
+  const stats = data.repo_stats || {};
+  document.getElementById("badge-repo").textContent = `REPO: ${data.repo_label || "N/A"}`;
+  document.getElementById("badge-graph").textContent = `AST: ${stats.num_nodes || 0} nós / ${stats.num_edges || 0} arestas`;
+
+  const cards = [
+    { label: "PGR (RouteLLM)", val: `${fmt(k.pgr_pct, 1)}%`, sub: `Q_weak=${fmt(k.q_weak_anchor, 3)} → Q_strong=${fmt(k.q_strong_anchor, 3)}`, accent: "#10b981" },
+    { label: "Compressão de Tokens", val: `-${fmt(k.token_savings_pct, 1)}%`, sub: `${Math.round(k.mean_occam_tokens || 0)} vs ${Math.round(k.mean_bf_tokens || 0)} tok (Brute Force)`, accent: "#38bdf8" },
+    { label: "Custo / 1.000 Execuções", val: `$${fmt(k.cost_per_1k_usd, 2)}`, sub: `-${fmt(k.cost_savings_pct, 1)}% vs Brute Force ($${fmt(k.bf_cost_per_1k_usd, 2)})`, accent: "#10b981" },
+    { label: "Recall (Arquivo / Função)", val: `${fmt(k.file_recall, 2)} / ${fmt(k.function_recall, 2)}`, sub: `Symbol Precision=${fmt(k.symbol_precision, 3)} | F1=${fmt(k.symbol_f1, 3)}`, accent: "#38bdf8" },
+    { label: "Middle-Burial Exposure", val: `${fmt(k.middle_burial_pct, 1)}%`, sub: `vs ${fmt(k.bf_middle_burial_pct, 1)}% Brute Force (Lost in the Middle)`, accent: "#f59e0b" },
+    { label: "Router ROC-AUC", val: `${fmt(k.torch_roc_auc, 3)} / ${fmt(k.sklearn_roc_auc, 3)}`, sub: `PyTorch MLP (ECE=${fmt(k.torch_ece, 3)}) | Sklearn GBDT`, accent: "#a78bfa" },
+    { label: "Offload Local 4-bit", val: `${fmt(k.local_offload_pct, 1)}%`, sub: `Qwen2.5-Coder-7B (<=15GB VRAM) | tau=${fmt(k.optimal_tau, 2)}`, accent: "#10b981" },
+    { label: "Latência Slice + Route", val: `${fmt(k.avg_prep_ms, 2)} ms`, sub: `End-to-End médio=${fmt(k.avg_latency_ms, 0)} ms`, accent: "#38bdf8" }
+  ];
+
+  document.getElementById("kpi-cards").innerHTML = cards.map(c => `
+    <div class="kpi-card" style="--accent:${c.accent}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-val">${c.val}</div>
+      <div class="kpi-sub">${c.sub}</div>
+    </div>
+  `).join("");
+}
+
+function drawPareto(data) {
+  const canvas = document.getElementById("pareto-canvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const pad = { l: 58, r: 28, t: 24, b: 44 };
+  const rows = data.pipeline_summary || [];
+  if (!rows.length) return;
+
+  const logMin = Math.log10(300), logMax = Math.log10(25000);
+  const yMin = 0.35, yMax = 1.04;
+  const xOf = tok => pad.l + ((Math.log10(Math.max(300, tok)) - logMin) / (logMax - logMin)) * (W - pad.l - pad.r);
+  const yOf = q => H - pad.b - ((q - yMin) / (yMax - yMin)) * (H - pad.t - pad.b);
+
+  ctx.strokeStyle = "#1f2937"; ctx.lineWidth = 1;
+  [0.4, 0.55, 0.7, 0.85, 1.0].forEach(yv => {
+    const y = yOf(yv);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = "#9ca3af"; ctx.font = "11px monospace";
+    ctx.fillText(yv.toFixed(2), 14, y + 4);
+  });
+  [500, 1000, 3000, 10000, 20000].forEach(tv => {
+    const x = xOf(tv);
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b); ctx.stroke();
+    ctx.fillStyle = "#9ca3af"; ctx.font = "11px monospace";
+    ctx.fillText(tv >= 1000 ? `${tv/1000}k` : `${tv}`, x - 12, H - 18);
+  });
+
+  const k = data.kpis || {};
+  [
+    { y: k.q_strong_anchor || 0.969, lbl: "Strong-Only Anchor", col: "#38bdf8" },
+    { y: k.q_weak_anchor || 0.744, lbl: "Weak-Only Anchor", col: "#6b7280" }
+  ].forEach(a => {
+    const y = yOf(a.y);
+    ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = a.col;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = a.col; ctx.font = "10.5px sans-serif";
+    ctx.fillText(`${a.lbl} (${fmt(a.y, 3)})`, pad.l + 8, y - 5);
+  });
+
+  rows.forEach(r => {
+    const x = xOf(r.mean_tokens), y = yOf(r.quality_score);
+    const col = PALETTE[r.pipeline] || "#e5e7eb";
+    const isOccam = String(r.pipeline).includes("OccamRoute");
+    ctx.beginPath();
+    ctx.arc(x, y, isOccam ? 9 : 6.5, 0, Math.PI * 2);
+    ctx.fillStyle = col; ctx.fill();
+    ctx.lineWidth = isOccam ? 2.5 : 1.5; ctx.strokeStyle = isOccam ? "#ffffff" : "#0b0f17"; ctx.stroke();
+
+    ctx.fillStyle = isOccam ? "#6ee7b7" : "#e5e7eb";
+    ctx.font = isOccam ? "bold 11.5px sans-serif" : "11px sans-serif";
+    const dx = x > W - 210 ? -145 : 12;
+    const dy = isOccam ? 4 : (r.pipeline === "Brute Force" ? 16 : -8);
+    ctx.fillText(`${r.pipeline} (${Math.round(r.mean_tokens)}t | PGR ${fmt(r.pgr_pct, 0)}%)`, x + dx, y + dy);
+  });
+
+  ctx.fillStyle = "#9ca3af"; ctx.font = "11px sans-serif";
+  ctx.fillText("Mean Context Tokens (log scale)", W / 2 - 80, H - 4);
+}
+
+function drawSweep(data) {
+  const backend = document.getElementById("sim-backend").value;
+  const tau = parseFloat(document.getElementById("tau-slider").value);
+  document.getElementById("tau-label").textContent = tau.toFixed(2);
+
+  const sweep = (data.router_metrics && data.router_metrics[`${backend}_sweep`]) || [];
+  const canvas = document.getElementById("sweep-canvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!sweep.length) return;
+
+  const pad = { l: 48, r: 22, t: 18, b: 34 };
+  const xMin = 30, xMax = 65, yMin = 65, yMax = 100;
+  const xOf = v => pad.l + ((Math.max(xMin, Math.min(xMax, v)) - xMin) / (xMax - xMin)) * (W - pad.l - pad.r);
+  const yOf = v => H - pad.b - ((Math.max(yMin, Math.min(yMax, v)) - yMin) / (yMax - yMin)) * (H - pad.t - pad.b);
+
+  ctx.strokeStyle = "#1f2937"; ctx.lineWidth = 1;
+  [70, 80, 90, 100].forEach(yv => {
+    const y = yOf(yv);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = "#9ca3af"; ctx.font = "10px monospace"; ctx.fillText(`${yv}%`, 10, y + 3);
+  });
+  [35, 45, 55, 65].forEach(xv => {
+    const x = xOf(xv);
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b); ctx.stroke();
+    ctx.fillStyle = "#9ca3af"; ctx.font = "10px monospace"; ctx.fillText(`${xv}%`, x - 10, H - 14);
+  });
+
+  ctx.strokeStyle = backend === "torch" ? "#10b981" : "#38bdf8";
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  sweep.forEach((r, idx) => {
+    const x = xOf(r.cost_savings_pct), y = yOf(r.pgr_pct);
+    if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  let active = sweep[0];
+  sweep.forEach(r => {
+    if (Math.abs(r.threshold - tau) < Math.abs(active.threshold - tau)) active = r;
+    const x = xOf(r.cost_savings_pct), y = yOf(r.pgr_pct);
+    const isAct = Math.abs(r.threshold - tau) < 0.051;
+    ctx.beginPath(); ctx.arc(x, y, isAct ? 7 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = isAct ? "#f59e0b" : "#e5e7eb"; ctx.fill();
+    if (isAct) { ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.8; ctx.stroke(); }
+  });
+
+  const m = (data.router_metrics && data.router_metrics[backend]) || {};
+  document.getElementById("sim-stats").innerHTML = [
+    { k: "PGR Recuperado", v: `${fmt(active.pgr_pct, 1)}%` },
+    { k: "Economia Custo", v: `${fmt(active.cost_savings_pct, 1)}%` },
+    { k: "Offload Local 4-bit", v: `${fmt(100 - active.strong_call_pct, 1)}%` },
+    { k: "ROC-AUC / ECE", v: `${fmt(m.roc_auc, 3)} / ${fmt(m.ece, 3)}` }
+  ].map(s => `<div class="mini-stat"><div class="k">${s.k}</div><div class="v">${s.v}</div></div>`).join("");
+}
+
+function drawCohen(data) {
+  const rows = (data.feature_separability || []).slice(0, 12).reverse();
+  const canvas = document.getElementById("cohen-canvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!rows.length) return;
+  const pad = { l: 165, r: 44, t: 14, b: 22 };
+  const maxD = Math.max(1.5, ...rows.map(r => Math.abs(r.cohen_d)));
+  const rowH = (H - pad.t - pad.b) / rows.length;
+
+  rows.forEach((r, i) => {
+    const y = pad.t + i * rowH + 3;
+    const bh = Math.max(8, rowH - 6);
+    const w = (Math.abs(r.cohen_d) / maxD) * (W - pad.l - pad.r);
+    ctx.fillStyle = "#9ca3af"; ctx.font = "11px monospace";
+    ctx.fillText(r.feature, 8, y + bh - 2);
+    ctx.fillStyle = r.cohen_d >= 0 ? "#38bdf8" : "#a78bfa";
+    ctx.fillRect(pad.l, y, w, bh);
+    ctx.fillStyle = "#e5e7eb"; ctx.font = "10.5px monospace";
+    ctx.fillText(r.cohen_d.toFixed(2), pad.l + w + 6, y + bh - 2);
+  });
+}
+
+function renderPipelineTable(data) {
+  const rows = data.pipeline_summary || [];
+  const head = `<thead><tr>
+    <th>Pipeline</th><th class="num">Avg Tokens</th><th class="num">Savings</th>
+    <th class="num">File Rec</th><th class="num">Func Rec</th><th class="num">Sym F1</th>
+    <th class="num">Middle-Burial</th><th class="num">Cost/1k</th><th class="num">PGR</th>
+  </tr></thead>`;
+  const body = rows.map(r => {
+    const isOc = String(r.pipeline).includes("OccamRoute");
+    return `<tr class="${isOc ? "highlight" : ""}">
+      <td><strong>${r.pipeline}</strong></td>
+      <td class="num">${Math.round(r.mean_tokens).toLocaleString()}</td>
+      <td class="num">${fmt(r.token_savings_pct, 1)}%</td>
+      <td class="num">${fmt(r.file_recall, 2)}</td>
+      <td class="num">${fmt(r.function_recall, 2)}</td>
+      <td class="num">${fmt(r.symbol_f1, 3)}</td>
+      <td class="num">${fmt(r.middle_burial_pct, 1)}%</td>
+      <td class="num">$${fmt(r.cost_per_1k_usd, 2)}</td>
+      <td class="num"><strong>${fmt(r.pgr_pct, 1)}%</strong></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("pipeline-table").innerHTML = head + `<tbody>${body}</tbody>`;
+}
+
+function renderTelemetry(rows) {
+  const head = `<thead><tr>
+    <th>Hora</th><th>Query</th><th>Backend</th><th>Tier Selecionado</th>
+    <th class="num">P(strong)</th><th class="num">Tokens</th><th class="num">Compressão</th>
+    <th class="num">Nós/Arestas</th><th class="num">Slice + Route</th>
+  </tr></thead>`;
+  const body = (rows || []).map(r => `<tr>
+    <td style="font-family:var(--mono);color:var(--muted)">${r.timestamp || "-"}</td>
+    <td>${r.query}</td>
+    <td style="font-family:var(--mono)">${r.backend}</td>
+    <td><span class="tier-badge ${r.selected_tier === "weak_local" ? "tier-weak" : "tier-strong"}">${r.selected_tier}</span></td>
+    <td class="num">${fmt(r.p_strong, 3)}</td>
+    <td class="num">${r.context_tokens}</td>
+    <td class="num">${fmt(r.compression_pct, 1)}%</td>
+    <td class="num">${r.nodes} / ${r.edges}</td>
+    <td class="num">${fmt(r.slicing_ms + r.routing_ms, 2)} ms</td>
+  </tr>`).join("");
+  document.getElementById("telemetry-table").innerHTML = head + `<tbody>${body}</tbody>`;
+}
+
+function renderSubgraphSVG(res) {
+  const svg = document.getElementById("subgraph-svg");
+  const nodes = res.ordered_symbols || [];
+  const edges = res.subgraph_edges || [];
+  const W = 620, H = 220;
+  if (!nodes.length) { svg.innerHTML = ""; return; }
+
+  const pos = {};
+  const cx = W / 2, cy = H / 2, rx = 215, ry = 72;
+  nodes.forEach((n, i) => {
+    if (nodes.length === 1) {
+      pos[n.node_id] = { x: cx, y: cy };
+    } else {
+      const ang = (i / nodes.length) * Math.PI * 2 - Math.PI / 2;
+      pos[n.node_id] = { x: cx + rx * Math.cos(ang), y: cy + ry * Math.sin(ang) };
+    }
+  });
+
+  const edgeSvg = edges.map(e => {
+    const a = pos[e.source], b = pos[e.target];
+    if (!a || !b) return "";
+    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#38bdf8" stroke-opacity="0.65" stroke-width="1.8" marker-end="url(#arrow)" />`;
+  }).join("");
+
+  const nodeSvg = nodes.map(n => {
+    const p = pos[n.node_id];
+    const fill = n.is_seed ? "#10b981" : "#a78bfa";
+    return `<g>
+      <circle cx="${p.x}" cy="${p.y}" r="14" fill="${fill}" fill-opacity="0.22" stroke="${fill}" stroke-width="2" />
+      <text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="#e5e7eb" font-size="10" font-family="monospace">${n.token_count}t</text>
+      <text x="${p.x}" y="${p.y + 27}" text-anchor="middle" fill="#cbd5e1" font-size="10.5" font-family="monospace">${n.qualname.slice(0, 26)}</text>
+    </g>`;
+  }).join("");
+
+  svg.innerHTML = `
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="18" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+      </marker>
+    </defs>
+    ${edgeSvg}${nodeSvg}
+  `;
+}
+
+function renderLiveRoute(res) {
+  document.getElementById("live-slice-meta").textContent =
+    `${res.context_tokens}/${res.token_budget} tok (${fmt(res.compression_ratio * 100, 1)}% compr.) | ${res.slicing_latency_ms} ms`;
+
+  const verdicts = [
+    { title: "PyTorch Tabular MLP (.pt)", d: res.torch_decision },
+    { title: "Sklearn Calibrated GBDT (.joblib)", d: res.sklearn_decision }
+  ];
+  document.getElementById("live-verdicts").innerHTML = verdicts.map(v => `
+    <div class="verdict-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <strong style="font-size:13px">${v.title}</strong>
+        <span class="tier-badge ${v.d.selected_tier === "weak_local" ? "tier-weak" : "tier-strong"}">${v.d.selected_tier}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono)">
+        P(strong)=${fmt(v.d.p_strong, 3)} | tau=${fmt(v.d.threshold, 2)} | ${v.d.recommended_model} | $${fmt(v.d.estimated_cost_per_1k_usd, 2)}/1k | ${fmt(v.d.routing_latency_ms, 2)} ms
+      </div>
+    </div>
+  `).join("");
+
+  renderSubgraphSVG(res);
+
+  document.getElementById("u-order-strip").innerHTML = (res.ordered_symbols || []).map(s => `
+    <div class="u-node ${s.position_zone}">
+      <span class="zone-tag">${s.position_zone}</span>
+      ${s.qualname} (${s.token_count}t)
+    </div>
+  `).join("");
+
+  const maxMap = { num_nodes: 8, num_edges: 12, max_call_depth: 4, context_tokens: res.token_budget, mean_cyclomatic: 25, max_cyclomatic: 45, query_token_count: 80 };
+  document.getElementById("live-features").innerHTML = Object.entries(res.features || {}).map(([k, val]) => {
+    const cap = maxMap[k] || 1.0;
+    const pct = Math.min(100, Math.max(4, (Math.abs(val) / cap) * 100));
+    return `<div class="feat-item">
+      <div class="top"><span>${k}</span><strong>${fmt(val, 3)}</strong></div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("live-context").textContent = res.context_text || "(vazio)";
+}
+
+async function runLivePlayground() {
+  const payload = {
+    query: document.getElementById("live-query").value,
+    token_budget: parseInt(document.getElementById("live-budget").value, 10) || 1500,
+    max_symbols: parseInt(document.getElementById("live-max-syms").value, 10) || 6,
+    k_hop: parseInt(document.getElementById("live-khop").value, 10) || 2,
+    threshold: parseFloat(document.getElementById("tau-slider").value) || 0.50,
+    backend: document.getElementById("sim-backend").value
+  };
+  try {
+    const r = await fetch("/api/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error("API offline");
+    const res = await r.json();
+    renderLiveRoute(res);
+    const tResp = await fetch("/api/telemetry");
+    if (tResp.ok) renderTelemetry(await tResp.json());
+  } catch (err) {
+    document.getElementById("live-context").textContent = "Snapshot estático offline. Inicie `uv run python scripts/run_dashboard.py` para usar o Playground ao vivo.";
+  }
+}
+
+async function init() {
+  if (!STATE.kpis) {
+    const resp = await fetch("/api/kpis");
+    STATE.kpis = await resp.json();
+  } else {
+    document.getElementById("badge-status").textContent = "MODE: SNAPSHOT / LIVE";
+  }
+  const data = STATE.kpis;
+  renderKPIs(data);
+  drawPareto(data);
+  drawSweep(data);
+  drawCohen(data);
+  renderPipelineTable(data);
+  renderTelemetry(data.live_telemetry || []);
+
+  document.getElementById("tau-slider").addEventListener("input", () => drawSweep(STATE.kpis));
+  document.getElementById("sim-backend").addEventListener("change", () => drawSweep(STATE.kpis));
+  document.getElementById("run-route-btn").addEventListener("click", runLivePlayground);
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("live-query").value = btn.dataset.q;
+      runLivePlayground();
+    });
+  });
+
+  if (window.location.protocol.startsWith("http")) {
+    runLivePlayground();
+  }
+}
+init();
+</script>
+</body>
+</html>
