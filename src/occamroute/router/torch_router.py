@@ -62,7 +62,7 @@ class TorchComplexityRouter:
         self.config = config or TorchRouterConfig()
         self.feature_names: tuple[str, ...] = FEATURE_NAMES
         torch.manual_seed(self.config.seed)
-        self.device = torch.device("cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = TabularRouterMLP(
             input_dim=self.config.input_dim,
             hidden_dims=self.config.hidden_dims,
@@ -152,7 +152,7 @@ class TorchComplexityRouter:
         checkpoint = {
             "config": cfg_dict,
             "feature_names": list(self.feature_names),
-            "state_dict": self.model.state_dict(),
+            "state_dict": {k: v.detach().cpu() for k, v in self.model.state_dict().items()},
             "mean": torch.from_numpy(self.mean_),
             "std": torch.from_numpy(self.std_),
             "is_fitted": self.is_fitted,
