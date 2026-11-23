@@ -162,7 +162,21 @@ class DashboardState:
 
         self._ensure_router_artifacts()
         self.torch_router = OccamRouter.from_artifact(self.artifacts_dir / "torch_router.pt", threshold=0.50)
-        self.sklearn_router = OccamRouter.from_artifact(self.artifacts_dir / "sklearn_router.joblib", threshold=0.50)
+        try:
+            self.sklearn_router = OccamRouter.from_artifact(self.artifacts_dir / "sklearn_router.joblib", threshold=0.50)
+        except Exception:
+            # Handle cross-version scikit-learn pickle incompatibility (e.g. Colab 1.6 -> local 1.9)
+            train_csv = self.artifacts_dir / "router_training_dataset.csv"
+            if train_csv.exists():
+                df_t = pd.read_csv(train_csv)
+                X_t = df_t[list(FEATURE_NAMES)].to_numpy(dtype=np.float32)
+                y_t = df_t["label"].to_numpy(dtype=np.int64)
+            else:
+                ds_tmp = build_routing_dataset(repo_graph=self.repo_graph, n_samples=320, val_ratio=0.25, seed=42)
+                X_t, y_t = ds_tmp.X_train, ds_tmp.y_train
+            sk_refit = SklearnComplexityRouter().fit(X_t, y_t)
+            sk_refit.save(self.artifacts_dir / "sklearn_router.joblib")
+            self.sklearn_router = OccamRouter(sk_refit, threshold=0.50)
         self.live_telemetry: deque[dict[str, Any]] = deque(maxlen=40)
         self._seed_initial_telemetry()
 
@@ -251,7 +265,8 @@ class DashboardState:
             bf_row = grp[grp["pipeline"] == "Brute Force"].iloc[0]
             bf_tokens = float(bf_row["mean_tokens"])
             bf_cost = float(bf_row["cost_per_1k_usd"])
-            q_weak, q_strong = 0.744, 0.969
+            q_weak = float(router_metrics.get("q_weak", 0.744))
+            q_strong = float(router_metrics.get("q_strong", 0.969))
 
             grp["token_savings_pct"] = (1.0 - grp["mean_tokens"] / max(1.0, bf_tokens)) * 100.0
             grp["cost_savings_pct"] = (1.0 - grp["cost_per_1k_usd"] / max(1e-6, bf_cost)) * 100.0

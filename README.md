@@ -14,18 +14,20 @@ OccamRoute unifies three empirical findings from recent LLM systems research:
 
 ---
 
-## Benchmark Results (`encode/httpx@0.28.1` — 12 Verified Tasks)
+## Benchmark Results (Verified on Google Colab Tesla T4 GPU — `encode/httpx@0.28.1`)
 
-| Pipeline | Avg Tokens | Token Savings | File Recall | Func Recall | Symbol F1 | Middle-Burial | Quality | PGR | Cost / 1k Runs |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Brute Force** | 12,985.7 | 0.0% | 1.000 | 1.000 | 0.076 | 29.6% | 0.808 | 28.3% | $17.18 |
-| **Naive RAG** | 2,435.1 | +81.2% | 0.750 | 0.444 | 0.105 | 43.8% | 0.454 | -128.8% | $3.99 |
-| **Unbounded AST 2-Hop** | 12,794.3 | +1.5% | 0.917 | 0.942 | 0.144 | 25.0% | 0.788 | 19.5% | $16.94 |
-| **OccamRoute (ML)** | **852.0** | **+93.4%** | **1.000** | **1.000** | **0.786** | **16.9%** | **0.954** | **93.4%** | **$1.83** |
+Executed live on **NVIDIA Tesla T4 (14.56 GB VRAM)** via `scripts/colab_gpu_train_eval.py` with real **FAISS + `BAAI/bge-small-en-v1.5`**, real **4-bit NF4 `Qwen/Qwen2.5-Coder-7B-Instruct`** (`5.88 GB` peak VRAM), and CUDA-trained routers (`princeton-nlp/SWE-bench_Lite` + topological augmentation):
 
-### ML Router Validation (`princeton-nlp/SWE-bench_Lite` + Topological Augmentation)
-- **PyTorch Tabular MLP (`TorchComplexityRouter`):** `ROC-AUC = 0.976` | `Accuracy = 0.941` | `F1 = 0.941` | `ECE = 0.034`
-- **Scikit-learn Calibrated GBDT (`SklearnComplexityRouter`):** `ROC-AUC = 0.985` | `Accuracy = 0.933` | `F1 = 0.929` | `ECE = 0.111`
+| Pipeline | Avg Tokens | Token Savings | File Recall | Func Recall | Symbol F1 | Middle-Burial | Quality | Cost / 1k Runs |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Brute Force** | 12,981.8 | 0.0% | 1.000 | 1.000 | 0.076 | 29.6% | 0.808 | $17.17 |
+| **Naive RAG (FAISS + BGE-small)** | 2,462.8 | +81.0% | 0.833 | 0.744 | 0.218 | 22.9% | 0.674 | $4.02 |
+| **Unbounded AST 2-Hop** | 4,476.6 | +65.5% | 0.917 | 0.942 | 0.232 | 44.4% | 0.778 | $6.54 |
+| **OccamRoute (ML)** | **709.8** | **+94.5%** | **1.000** | **1.000** | **0.828** | **12.8%** | **0.956** | **$1.79** |
+
+### ML Router Validation (Trained on Colab Tesla T4 CUDA)
+- **PyTorch Tabular MLP (`TorchComplexityRouter`):** `ROC-AUC = 0.983` | `Accuracy = 0.965` | `F1 = 0.966` | `ECE = 0.036`
+- **Scikit-learn Calibrated GBDT (`SklearnComplexityRouter`):** `ROC-AUC = 0.982` | `Accuracy = 0.975` | `F1 = 0.975` | `ECE = 0.053`
 
 ![Pareto Frontier](assets/swebench_pareto_frontier.png)
 ![Per-Task Breakdown](assets/swebench_task_breakdown.png)
