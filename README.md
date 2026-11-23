@@ -127,6 +127,36 @@ PYTHONPATH=src uv run python scripts/smoke_test.py
 PYTHONPATH=src .venv/bin/python scripts/run_dashboard.py --host 127.0.0.1 --port 8001
 ```
 
+## Use OccamRoute Today (CLI, IDE MCP Server & GitHub Action)
+
+### 1. CLI (Context Slicing & Git Diff Impact)
+```bash
+# Inspect architectural PageRank hubs in any Python repo
+occamroute map --repo . --top 10
+
+# Extract minimal AST context + ML routing verdict under a strict token cap
+occamroute slice "Trace how SurgicalContextSlicer enforces token_budget" --repo . --budget 1200
+
+# Analyze a git diff / PR blast-radius over the reverse call graph
+occamroute impact --repo . --ref HEAD~1 --markdown
+```
+
+### 2. MCP Server (Antigravity, Cursor, Claude Code, VS Code)
+Add to your `mcp_config.json` to expose `occamroute_slice_context`, `occamroute_diff_impact`, and `occamroute_repo_map`:
+```json
+{
+  "mcpServers": {
+    "occamroute": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/OccamRoute", "occamroute", "mcp", "--repo", "."]
+    }
+  }
+}
+```
+
+### 3. GitHub Action (PR Impact & Complexity Routing)
+Included at [.github/workflows/occamroute-pr-impact.yml](.github/workflows/occamroute-pr-impact.yml) — automatically computes blast-radius callers and complexity tier on every Pull Request.
+
 - **Notebook 01 (Router Learning on SWE-bench Lite — 1-Click Colab):** https://colab.research.google.com/github/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-/blob/main/01_occamroute_router_learning.ipynb
 - **Notebook 02 (4-Pipeline GPU Solver & Benchmark — 1-Click Colab):** https://colab.research.google.com/github/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-/blob/main/02_occamroute_swebench_solver_eval.ipynb
 

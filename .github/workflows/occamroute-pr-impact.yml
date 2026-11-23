@@ -1,0 +1,28 @@
+name: OccamRoute PR Impact & Complexity Routing
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  occamroute-impact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install OccamRoute
+        run: uv sync --no-dev
+
+      - name: Run AST Blast-Radius & Complexity Routing
+        run: |
+          PYTHONPATH=src uv run python -m occamroute.cli impact \
+            --repo . \
+            --ref "origin/${{ github.base_ref }}" \
+            --budget 2000 \
+            --markdown >> "$GITHUB_STEP_SUMMARY"

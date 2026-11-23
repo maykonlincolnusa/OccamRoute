@@ -62,6 +62,9 @@ Homepage = "https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Comp
 Repository = "https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-"
 Issues = "https://github.com/maykonlincolnusa/OccamRoute-Surgical-Context-Complexity-Routing-Engine-/issues"
 
+[project.scripts]
+occamroute = "occamroute.cli:main"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/occamroute"]
 

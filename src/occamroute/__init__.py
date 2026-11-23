@@ -23,6 +23,8 @@ from occamroute.graph_builder import (
     count_tokens,
     safe_pagerank,
 )
+from occamroute.impact_analyzer import DiffImpactReport, GitDiffImpactAnalyzer, load_default_router
+from occamroute.mcp_server import OccamRouteMCPServer
 from occamroute.router import (
     OccamRouter,
     RouterDataset,
@@ -37,8 +39,11 @@ from occamroute.router import (
 )
 
 __all__ = [
+    "DiffImpactReport",
     "FEATURE_NAMES",
+    "GitDiffImpactAnalyzer",
     "GraphComplexityFeatures",
+    "OccamRouteMCPServer",
     "OccamRouter",
     "RepoGraph",
     "RepoGraphBuilder",
