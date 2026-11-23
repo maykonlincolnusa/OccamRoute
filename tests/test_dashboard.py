@@ -32,6 +32,10 @@ def pipeline(x: int) -> int:
     assert "OccamRoute" in r_root.text
     assert "application/ld+json" in r_root.text
     assert "og:title" in r_root.text
+    import re as _re
+    html_ids = set(_re.findall(r'id="([^"]+)"', r_root.text))
+    js_ids = set(_re.findall(r'getElementById\("([^"]+)"\)', r_root.text))
+    assert js_ids <= html_ids, f"Missing DOM IDs referenced by JS: {sorted(js_ids - html_ids)}"
 
     r_health = client.get("/api/health")
     assert r_health.status_code == 200

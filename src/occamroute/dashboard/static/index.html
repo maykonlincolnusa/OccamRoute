@@ -433,7 +433,7 @@ function renderHeaderAndKPIs(data) {
     { label: "Peak VRAM (T4 4-bit)", val: `${tm.peak_vram_gb ? fmt(tm.peak_vram_gb, 2) + " GB" : "5.88 GB"}`, sub: `Dentro do teto de 15 GB (Qwen2.5-Coder-7B NF4)`, accent: "#10b981" }
   ];
 
-  document.getElementById("kpi-cards").innerHTML = cards.map(c => `
+  document.getElementById("sec-kpis").innerHTML = cards.map(c => `
     <div class="kpi-card" style="--accent:${c.accent}">
       <div class="kpi-label">${c.label}</div>
       <div class="kpi-val">${c.val}</div>
