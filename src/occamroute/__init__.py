@@ -1,6 +1,21 @@
 """OccamRoute: AST code-graph context slicing and complexity feature extraction."""
 from __future__ import annotations
 
+from occamroute.benchmark import (
+    BaselineContextResult,
+    BenchmarkReport,
+    BenchmarkTask,
+    BruteForceBaseline,
+    NaiveRAGBaseline,
+    SWEBenchBenchmarkEvaluator,
+    TaskEvalRecord,
+    build_repo_eval_tasks,
+    generate_publication_charts,
+    plot_pareto_frontier,
+    plot_token_compression,
+    render_from_artifacts,
+    tasks_from_swebench_lite,
+)
 from occamroute.context_slicer import SliceResult, SurgicalContextSlicer, position_aware_order
 from occamroute.dataset_loader import (
     SWEBenchTask,
@@ -39,16 +54,22 @@ from occamroute.router import (
 )
 
 __all__ = [
+    "BaselineContextResult",
+    "BenchmarkReport",
+    "BenchmarkTask",
+    "BruteForceBaseline",
     "DiffImpactReport",
     "FEATURE_NAMES",
     "GitDiffImpactAnalyzer",
     "GraphComplexityFeatures",
+    "NaiveRAGBaseline",
     "OccamRouteMCPServer",
     "OccamRouter",
     "RepoGraph",
     "RepoGraphBuilder",
     "RouterDataset",
     "RoutingDecision",
+    "SWEBenchBenchmarkEvaluator",
     "SWEBenchTask",
     "SklearnComplexityRouter",
     "SklearnRouterConfig",
@@ -58,16 +79,23 @@ __all__ = [
     "SymbolKind",
     "SymbolNode",
     "TabularRouterMLP",
+    "TaskEvalRecord",
     "TorchComplexityRouter",
     "TorchRouterConfig",
     "augment_routing_dataset",
+    "build_repo_eval_tasks",
     "build_routing_dataset",
     "count_patch_churn",
     "count_tokens",
     "extract_ground_truth_files",
     "extract_patch_line_ranges",
+    "generate_publication_charts",
     "load_swebench_lite",
+    "plot_pareto_frontier",
+    "plot_token_compression",
     "position_aware_order",
+    "render_from_artifacts",
     "safe_pagerank",
+    "tasks_from_swebench_lite",
     "tasks_to_dataframe",
 ]

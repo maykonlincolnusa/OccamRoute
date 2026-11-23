@@ -14,6 +14,15 @@ from typing import Literal
 
 
 def _pip_install() -> None:
+    try:
+        import bitsandbytes  # noqa: F401
+        import datasets  # noqa: F401
+        import faiss  # noqa: F401
+        import sentence_transformers  # noqa: F401
+        import tiktoken  # noqa: F401
+        return
+    except ImportError:
+        pass
     pkgs = [
         "datasets",
         "tiktoken",
@@ -113,6 +122,108 @@ def _match_patch_symbols(repo_graph, hunks: dict[str, list[tuple[int, int]]]) ->
                 gt_symbols.append(nid)
 
     return sorted(set(gt_files)), gt_symbols, sym_names
+
+
+def _mine_repo_ast_tasks(repo: str, rg, slicer, extractor, count_tokens_fn, split_role: str, max_easy: int = 8, max_hard: int = 8) -> list[dict]:
+    """Mine real single-symbol contract tasks and multi-hop cross-file call-chain tasks from a repo's AST."""
+    mined: list[dict] = []
+    easy_by_file: dict[str, list[str]] = {}
+    for nid in sorted(rg.leaf_ids):
+        nd = rg.nodes[nid]
+        if _is_test_path(nd.file_path) or nd.name.startswith("_test"):
+            continue
+        toks = count_tokens_fn(nd.source)
+        if 25 <= toks <= 380 and nd.cyclomatic_complexity <= 7:
+            easy_by_file.setdefault(nd.file_path, []).append(nid)
+
+    # Pick round-robin across files for single/pair focused contract queries
+    easy_candidates: list[str] = []
+    f_keys = sorted(easy_by_file.keys())
+    idx_f = 0
+    while len(easy_candidates) < max_easy and f_keys:
+        fk = f_keys[idx_f % len(f_keys)]
+        if easy_by_file[fk]:
+            easy_candidates.append(easy_by_file[fk].pop(0))
+        else:
+            f_keys.pop(idx_f % len(f_keys))
+            continue
+        idx_f += 1
+
+    for i, nid in enumerate(easy_candidates):
+        nd = rg.nodes[nid]
+        prompt = f"Explain the contract, input validation, and return behavior of `{nd.qualname}` in `{nd.file_path}`."
+        sl = slicer.slice(prompt, token_budget=2000, max_symbols=6, k_hop=2)
+        feat = extractor.extract(sl).to_numpy()
+        gt_files = [nd.file_path]
+        gt_symbols = [nid]
+        mined.append({
+            "instance_id": f"{repo.replace('/', '__')}__ast_easy_{i+1}",
+            "repo": repo,
+            "source_kind": "ast_focused",
+            "split_role": split_role,
+            "problem_statement": prompt,
+            "context_text": sl.context_text,
+            "gt_files": gt_files,
+            "gt_symbols": gt_symbols,
+            "gt_symbol_names": [nd.name],
+            "patch_files_count": 1,
+            "patch_syms_count": 1,
+            "patch_churn": max(5, nd.cyclomatic_complexity * 2),
+            "max_gt_cc": int(nd.cyclomatic_complexity),
+            "slice_sym_rec": float(len(set(sl.ordered_node_ids) & set(gt_symbols))),
+            "slice_file_rec": float(len(set(sl.retrieved_files) & set(gt_files))),
+            "context_tokens": int(sl.context_tokens),
+            "features": feat,
+        })
+
+    # Pick multi-hop cross-file or high-cyclomatic call chains
+    hard_chains: list[list[str]] = []
+    seen_heads: set[str] = set()
+    for nid in sorted(rg.leaf_ids, key=lambda x: (-rg.nodes[x].cyclomatic_complexity, x)):
+        if len(hard_chains) >= max_hard:
+            break
+        nd = rg.nodes[nid]
+        if _is_test_path(nd.file_path) or nid in seen_heads:
+            continue
+        dist = rg.k_hop_neighbors([nid], k=2, undirected=True)
+        chain = [
+            s for s in sorted(dist.keys(), key=lambda x: (dist[x], -rg.nodes[x].cyclomatic_complexity))
+            if s in rg.leaf_ids and not _is_test_path(rg.nodes[s].file_path)
+        ][:4]
+        files = {rg.nodes[s].file_path for s in chain}
+        max_cc = max((rg.nodes[s].cyclomatic_complexity for s in chain), default=1)
+        if len(chain) >= 3 and (len(files) >= 2 or max_cc >= 9):
+            seen_heads.update(chain[:2])
+            hard_chains.append(chain)
+
+    for i, chain in enumerate(hard_chains):
+        qnames = " -> ".join(f"`{rg.nodes[s].qualname}`" for s in chain[:4])
+        gt_files = sorted({rg.nodes[s].file_path for s in chain})
+        files_str = ", ".join(f"`{f}`" for f in gt_files[:3])
+        prompt = f"Trace and refactor the execution chain {qnames} across {files_str} while preserving state invariants and exception contracts."
+        sl = slicer.slice(prompt, token_budget=2000, max_symbols=6, k_hop=2)
+        feat = extractor.extract(sl).to_numpy()
+        max_cc = max(rg.nodes[s].cyclomatic_complexity for s in chain)
+        mined.append({
+            "instance_id": f"{repo.replace('/', '__')}__ast_hard_{i+1}",
+            "repo": repo,
+            "source_kind": "ast_multihop",
+            "split_role": split_role,
+            "problem_statement": prompt,
+            "context_text": sl.context_text,
+            "gt_files": gt_files,
+            "gt_symbols": chain,
+            "gt_symbol_names": [rg.nodes[s].name for s in chain],
+            "patch_files_count": len(gt_files),
+            "patch_syms_count": len(chain),
+            "patch_churn": int(sum(rg.nodes[s].cyclomatic_complexity for s in chain) * 3),
+            "max_gt_cc": int(max_cc),
+            "slice_sym_rec": float(len(set(sl.ordered_node_ids) & set(chain)) / max(1, len(chain))),
+            "slice_file_rec": float(len(set(sl.retrieved_files) & set(gt_files)) / max(1, len(gt_files))),
+            "context_tokens": int(sl.context_tokens),
+            "features": feat,
+        })
+    return mined
 
 
 def _intra_class_balance(
@@ -285,30 +396,44 @@ def main() -> None:
             continue
 
         valid_count = 0
+        mined_done = False
+        split_role = "loro_test" if repo in LORO_QUOTAS else "train_pool"
         for task in repo_tasks:
             if valid_count >= quota:
                 break
             try:
                 _git_checkout(clone_dir, task.base_commit)
                 rg = RepoGraphBuilder().build_from_directory(clone_dir, exclude_dirs=EXCLUDE_DIRS)
+                slicer = SurgicalContextSlicer(rg)
+                extractor = SubgraphFeatureExtractor(rg)
+                if not mined_done:
+                    collected_issues.extend(
+                        _mine_repo_ast_tasks(
+                            repo, rg, slicer, extractor, count_tokens, split_role,
+                            max_easy=8 if split_role == "train_pool" else 6,
+                            max_hard=8 if split_role == "train_pool" else 6,
+                        )
+                    )
+                    mined_done = True
+
                 gt_files, gt_symbols, sym_names = _match_patch_symbols(rg, task.ground_truth_hunks)
                 if not gt_symbols or not gt_files:
                     continue
 
-                slicer = SurgicalContextSlicer(rg)
-                extractor = SubgraphFeatureExtractor(rg)
                 sl = slicer.slice(task.problem_statement, token_budget=2000, max_symbols=6, k_hop=2)
                 feat = extractor.extract(sl).to_numpy()
 
                 slice_sym_hits = len(set(sl.ordered_node_ids) & set(gt_symbols))
                 slice_sym_rec = slice_sym_hits / max(1, len(gt_symbols))
                 slice_file_rec = len(set(sl.retrieved_files) & set(gt_files)) / max(1, len(gt_files))
+                max_gt_cc = max((rg.nodes[s].cyclomatic_complexity for s in gt_symbols), default=1)
 
                 collected_issues.append(
                     {
                         "instance_id": task.instance_id,
                         "repo": repo,
-                        "split_role": "loro_test" if repo in LORO_QUOTAS else "train_pool",
+                        "source_kind": "swebench",
+                        "split_role": split_role,
                         "problem_statement": task.problem_statement[:2400],
                         "context_text": sl.context_text,
                         "gt_files": gt_files,
@@ -317,6 +442,7 @@ def main() -> None:
                         "patch_files_count": len(gt_files),
                         "patch_syms_count": len(gt_symbols),
                         "patch_churn": int(task.patch_added_lines + task.patch_removed_lines),
+                        "max_gt_cc": int(max_gt_cc),
                         "slice_sym_rec": float(slice_sym_rec),
                         "slice_file_rec": float(slice_file_rec),
                         "context_tokens": int(sl.context_tokens),
@@ -494,11 +620,16 @@ def main() -> None:
         sym_hit_rate = sym_hits / max(1, len(item["gt_symbol_names"]))
 
         weak_emp_score = 0.50 * sym_hit_rate + 0.30 * file_hit_rate + 0.20 * item["slice_sym_rec"]
-        # Empirical decision rule: weak_local succeeds (y=0) when 4-bit Qwen localizes >=50% with focused multi-file scope
-        weak_success = (
-            (weak_emp_score >= 0.45 and item["patch_files_count"] <= 2 and item["patch_syms_count"] <= 3 and item["patch_churn"] <= 45)
-            or (sym_hit_rate >= 0.65 and file_hit_rate >= 0.50 and item["patch_files_count"] <= 2)
-        )
+        kind = item.get("source_kind", "swebench")
+        if kind == "ast_focused":
+            weak_success = (weak_emp_score >= 0.55 and item.get("max_gt_cc", 1) <= 9)
+        elif kind == "ast_multihop":
+            weak_success = (weak_emp_score >= 0.88 and item["patch_files_count"] <= 1 and item.get("max_gt_cc", 10) <= 6)
+        else:
+            weak_success = (
+                (weak_emp_score >= 0.30 and item["patch_files_count"] <= 2 and item["patch_syms_count"] <= 2 and item["patch_churn"] <= 25)
+                or (sym_hit_rate >= 0.50 and file_hit_rate >= 0.50 and item["patch_files_count"] <= 2)
+            )
         label = 0 if weak_success else 1
 
         q_weak_emp = float(np.clip(0.60 * weak_emp_score + 0.25 * item["slice_sym_rec"] + 0.15 * (1.0 - min(1.0, item["patch_churn"] / 80.0)), 0.20, 0.94))
@@ -516,6 +647,7 @@ def main() -> None:
             {
                 "instance_id": item["instance_id"],
                 "repo": item["repo"],
+                "source_kind": kind,
                 "split_role": item["split_role"],
                 "patch_files_count": item["patch_files_count"],
                 "patch_syms_count": item["patch_syms_count"],
@@ -566,7 +698,7 @@ def main() -> None:
         med_l = float(np.median(df_loro["weak_emp_score"].to_numpy()))
         y_loro = np.where(df_loro["weak_emp_score"].to_numpy() >= med_l, 0, 1).astype(np.int64)
 
-    X_train_fit, y_train_fit = _intra_class_balance(X_tr_raw, y_tr_raw, target_per_class=160, seed=42)
+    X_train_fit, y_train_fit = _intra_class_balance(X_tr_raw, y_tr_raw, target_per_class=140, seed=42)
     df_train_out = pd.DataFrame(X_train_fit, columns=list(FEATURE_NAMES))
     df_train_out["label"] = y_train_fit
     df_train_out.to_csv(out_dir / "router_training_dataset.csv", index=False)
@@ -574,10 +706,10 @@ def main() -> None:
     sk_router = SklearnComplexityRouter().fit(X_train_fit, y_train_fit)
     pt_cfg = TorchRouterConfig(
         input_dim=len(FEATURE_NAMES),
-        hidden_dims=(32, 16),
-        dropout=0.20,
-        lr=3e-3,
-        epochs=160,
+        hidden_dims=(24, 12),
+        dropout=0.25,
+        lr=2e-3,
+        epochs=130,
         batch_size=32,
         seed=42,
     )
